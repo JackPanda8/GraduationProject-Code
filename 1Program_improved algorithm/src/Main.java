@@ -1,7 +1,3 @@
-import com.sun.deploy.uitoolkit.Window;
-import org.omg.CORBA.IDLTypeOperations;
-
-import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.io.*;
 
@@ -13,12 +9,15 @@ public class Main {
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
 
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
     public static final int WINDOW_SIZE = 10;//滑动窗口的大小
     public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
     public static final double CLOSE_CONSTANT = 0.6;//暂时定义close的衡量尺度为相似度>=0.6,所以0.6~0.8即为close_but_not_much的范围
 
     private ArrayList<People> dataset;
+    private ArrayList<String> fields;//所有的字段
+    private HashMap<String, Integer> fieldsDifference;//每个字段对应的不同记录数，是该字段对于整体数据的一个区分度
     private ArrayList<People> datasetAfterSort;
     private HashSet<People> duplicateTuples;
     private int[][] duplicateMatrix;
@@ -440,8 +439,49 @@ public class Main {
 
 
 
-    //[2]生成key，部分参考论文中的选择依据：surname的前三个辅音字母 +  given_name的前三个字母 + street_number前三个数字连接address_1的前三个辅音字母
+    //【改进点1】
+    //1.首先统计每个字段的区分度：即在该字段下不同记录的个数
+    //2.每次选择区分度较大的字段作为排序用的关键字
     private void generateKey() {
+        this.fieldsDifference = new HashMap<String, Integer>();
+        int iterator = 0;
+        for(String field : this.fields) {
+            int numberOfDifferenctRecords = 0;
+
+            //计算不同记录个数
+            ArrayList<String> tempList = new ArrayList<String>();
+
+            for(People people : this.dataset) {
+                String attribute = people.getAttributeByIndex(iterator);
+                if(attribute != null) {
+                    if(tempList.isEmpty()) {
+                        tempList.add(attribute);
+                    } else {
+                        int flag = 1;//当flag变为0的时候代表不需要增加新元素
+                        for(String s : tempList) {
+                            if(s.equals(attribute)) {
+                                flag = 0;
+                                break;
+                            } else {
+                                continue;
+                            }
+                        }
+                        if(flag == 1) {
+                            tempList.add(attribute);
+                        }
+                    }
+                }
+            }
+
+            numberOfDifferenctRecords = tempList.size();
+            this.fieldsDifference.put(field, numberOfDifferenctRecords);
+            iterator++;
+        }
+
+        //对得到的区分度map进行排序
+//        this.fieldsDifference.
+//        Collections.sort();
+
         for(People people : this.dataset) {
             StringBuilder sortKey = new StringBuilder();
             sortKey.append(getFirstThreeConsonant(people.getSurname()));
@@ -539,8 +579,13 @@ public class Main {
         this.dataset = new ArrayList<People>();
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(DATA_SET)));
+        this.fields = new ArrayList<String >();
+        String[] fieldsArray = br.readLine().split(",");
+        for(String temp : fieldsArray) {
+            this.fields.add(temp);
+        }
+
         String line = null;
-        br.readLine();
         while ((line = br.readLine()) != null) {
 //            System.out.println(line);
             if (line.length() != 0) {
