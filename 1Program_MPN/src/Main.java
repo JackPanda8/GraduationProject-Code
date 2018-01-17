@@ -6,11 +6,12 @@ enum Comparation {
 }
 
 public class Main {
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5-4-3-1-1-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
 
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
 
     public static final int SLIDEWINDOW_SIZE = 5;//滑动窗口的大小
     public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
@@ -22,17 +23,11 @@ public class Main {
     private ArrayList<People> datasetAfterSort1;
     private ArrayList<People> datasetAfterSort2;
     private HashSet<People> duplicateTuples;
-    private int[][] duplicateMatrix;
+//    private int[][] duplicateMatrix;
+    private HashMap<Integer, ArrayList<Integer>> duplicateList;//邻接链表替代邻接矩阵
     private ArrayList<People> cleanDataset;
 
     public static void main(String[] args) throws IOException{
-        int i = 0;
-        for(; i < 5; i++) {
-            if(i == 4) {
-                break;
-            }
-        }
-
         Main main = new Main();
         main.getData();
 
@@ -52,8 +47,8 @@ public class Main {
         main.quickSort2();
         main.slideWindowProcess2(SLIDEWINDOW_SIZE);
 
-
         main.eliminateDuplication();
+
 
         int numDup = 0;
         int numOri = 0;
@@ -77,12 +72,13 @@ public class Main {
     //[5]消除重复
     private void eliminateDuplication() {
         this.cleanDataset = new ArrayList<People>();
-        this.duplicateMatrix = TransitiveClosure.getTransitiveClosure(this.duplicateMatrix, this.datasetAfterSort.size());
+//        this.duplicateMatrix = TransitiveClosure.getTransitiveClosure(this.duplicateMatrix, this.datasetAfterSort.size());
+        TransitiveClosure.getTransitiveClosureOfList(this.duplicateList);
 
         for(int i = 0; i < this.datasetAfterSort.size(); i++) {
             int j = 0;
             for(; j < i; j++) {
-                if(this.duplicateMatrix[i][j] == 1) {
+                if(this.duplicateList.get(i).contains(j)) {
                     break;
                 }
             }
@@ -104,11 +100,12 @@ public class Main {
         }
 
         int size = this.datasetAfterSort.size();
-        this.duplicateMatrix = new int[size][size];
+//        this.duplicateMatrix = new int[size][size];
+        this.duplicateList = new HashMap<Integer, ArrayList<Integer>>();
+
         for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                this.duplicateMatrix[i][j] = 0;
-            }
+            ArrayList<Integer> tempList = new ArrayList<Integer>();
+            this.duplicateList.put(i, tempList);
         }
 
 //        int tail = w-1;
@@ -123,8 +120,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(i));
                         this.duplicateTuples.add(this.datasetAfterSort.get(tail));
 
-                        this.duplicateMatrix[tail][i] = 1;
-                        this.duplicateMatrix[i][tail] = 1;
+                        this.duplicateList.get(tail).add(i);
+                        this.duplicateList.get(i).add(tail);
                     }
                 }
             } else {
@@ -134,8 +131,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(i));
                         this.duplicateTuples.add(this.datasetAfterSort.get(tail));
 
-                        this.duplicateMatrix[tail][i] = 1;
-                        this.duplicateMatrix[i][tail] = 1;
+                        this.duplicateList.get(tail).add(i);
+                        this.duplicateList.get(i).add(tail);
                     }
                 }
             }
@@ -160,8 +157,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexI));
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexTail));
 
-                        this.duplicateMatrix[indexTail][indexI] = 1;
-                        this.duplicateMatrix[indexI][indexTail] = 1;
+                        this.duplicateList.get(indexTail).add(indexI);
+                        this.duplicateList.get(indexI).add(indexTail);
                     }
                 }
             } else {
@@ -173,8 +170,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexI));
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexTail));
 
-                        this.duplicateMatrix[indexTail][indexI] = 1;
-                        this.duplicateMatrix[indexI][indexTail] = 1;
+                        this.duplicateList.get(indexTail).add(indexI);
+                        this.duplicateList.get(indexI).add(indexTail);
                     }
                 }
             }
@@ -201,8 +198,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexI));
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexTail));
 
-                        this.duplicateMatrix[indexTail][indexI] = 1;
-                        this.duplicateMatrix[indexI][indexTail] = 1;
+                        this.duplicateList.get(indexTail).add(indexI);
+                        this.duplicateList.get(indexI).add(indexTail);
                     }
                 }
             } else {
@@ -214,8 +211,8 @@ public class Main {
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexI));
                         this.duplicateTuples.add(this.datasetAfterSort.get(indexTail));
 
-                        this.duplicateMatrix[indexTail][indexI] = 1;
-                        this.duplicateMatrix[indexI][indexTail] = 1;
+                        this.duplicateList.get(indexTail).add(indexI);
+                        this.duplicateList.get(indexI).add(indexTail);
                     }
                 }
             }

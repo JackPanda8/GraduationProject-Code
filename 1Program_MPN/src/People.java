@@ -189,4 +189,102 @@ public class People {
         this.family_role = family_role;
     }
 
+    //根据序号返回属性值
+    public String getAttributeByIndex(int index) {
+        String result = new String();
+        switch (index) {
+            case 0 : {
+                result = this.getRec_id();
+                break;
+            }
+            case 1 : {
+                result = this.getCulture();
+                break;
+            }
+            case 2 : {
+                result = this.getSex();
+                break;
+            }
+            case 3 : {
+                result = this.getAge();
+                break;
+            }
+            case 4 : {
+                result = this.getDate_of_birth();
+                break;
+            }
+            case 5 : {
+                result = this.getTitle();
+                break;
+            }
+
+            case 6 : {
+                result = this.getGiven_name();
+                break;
+            }
+
+            case 7 : {
+                result = this.getSurname();
+                break;
+            }
+
+            case 8 : {
+                result = this.getState();
+                break;
+            }
+
+            case 9 : {
+                result = this.getSuburb();
+                break;
+            }
+
+            case 10 : {
+                result = this.getPostcode();
+                break;
+            }
+
+            case 11 : {
+                result = this.getStreet_number();
+                break;
+            }
+
+            case 12 : {
+                result = this.getAddress_1();
+                break;
+            }
+
+            case 13 : {
+                result = this.getAddress_2();
+                break;
+            }
+
+            case 14 : {
+                result = this.getPhone_number();
+                break;
+            }
+
+            case 15 : {
+                result = this.getSoc_sec_id();
+                break;
+            }
+
+            case 16 : {
+                result = this.getBlocking_number();
+                break;
+            }
+
+            case 17 : {
+                result = this.getFamily_role();
+                break;
+            }
+
+            default: {
+                result = null;
+                break;
+            }
+        }
+
+        return result;
+    }
+
 }

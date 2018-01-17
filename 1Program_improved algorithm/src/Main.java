@@ -6,18 +6,23 @@ enum Comparation {
 }
 
 public class Main {
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5-4-3-1-1-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5000-1000-5-2-2-uniform-all-0.csv";
 
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
-    public static final int WINDOW_SIZE = 10;//滑动窗口的大小
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-20000-1000-5-2-2-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-50000-1000-5-2-2-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
+    public static final int WINDOW_SIZE = 5;//滑动窗口的大小
     public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
     public static final double CLOSE_CONSTANT = 0.6;//暂时定义close的衡量尺度为相似度>=0.6,所以0.6~0.8即为close_but_not_much的范围
 
     private ArrayList<People> dataset;
     private ArrayList<String> fields;//所有的字段
     private HashMap<String, Integer> fieldsDifference;//每个字段对应的不同记录数，是该字段对于整体数据的一个区分度
+    private String[] maxThreeFields;
     private ArrayList<People> datasetAfterSort;
     private HashSet<People> duplicateTuples;
     private int[][] duplicateMatrix;
@@ -55,18 +60,41 @@ public class Main {
         this.cleanDataset = new ArrayList<People>();
         this.duplicateMatrix = TransitiveClosure.getTransitiveClosure(this.duplicateMatrix, this.datasetAfterSort.size());
 
-        for(int i = 0; i < this.datasetAfterSort.size(); i++) {
-            int j = 0;
-            for(; j < i; j++) {
-                if(this.duplicateMatrix[i][j] == 1) {
-                    break;
-                }
-            }
-            if(j == i) {
-                this.cleanDataset.add(this.datasetAfterSort.get(i));
-            }
+//        for(int i = 0; i < this.datasetAfterSort.size(); i++) {
+//            int j = 0;
+//            for(; j < i; j++) {
+//                if(this.duplicateMatrix[i][j] == 1) {
+//                    break;
+//                }
+//            }
+//            if(j == i) {
+//                this.cleanDataset.add(this.datasetAfterSort.get(i));
+//            }
+//
+//        }
 
+
+
+        int[] flagArray = new int[this.datasetAfterSort.size()];
+        for (int i = 0; i < flagArray.length; i++) {
+            flagArray[i] = 0;
         }
+
+        for (int i = 0; i < flagArray.length; i++) {
+            if(flagArray[i] == 0) {
+                flagArray[i] = 1;
+                this.cleanDataset.add(this.datasetAfterSort.get(i));
+                for(int j = 0; j < flagArray.length; j++) {
+                    if(this.duplicateMatrix[i][j] == 1) {
+                        flagArray[j] = 1;
+                    }
+
+                }
+            } else {
+                continue;
+            }
+        }
+
     }
 
 
@@ -474,27 +502,102 @@ public class Main {
             }
 
             numberOfDifferenctRecords = tempList.size();
-            this.fieldsDifference.put(field, numberOfDifferenctRecords);
+            if(!field.equals("rec_id")) {
+                this.fieldsDifference.put(field, numberOfDifferenctRecords);
+            }
+
             iterator++;
         }
 
-        //对得到的区分度map进行排序
-//        this.fieldsDifference.
-//        Collections.sort();
+        //取出来区分度前三大的字段
+        HashMap<String, Integer> copy = new HashMap<String, Integer>();
+        for(int i = 0; i < this.fieldsDifference.keySet().size(); i++) {
+            String tempKey = (String) this.fieldsDifference.keySet().toArray()[i];
+            copy.put(tempKey, this.fieldsDifference.get(tempKey));
+        }
+        String maxKey1 = null;
+        int maxValue1 = 0;
+        for(String s : copy.keySet()) {
+            if(copy.get(s) > maxValue1) {
+                maxValue1 = copy.get(s);
+                maxKey1 = s;
+            }
+        }
+        copy.remove(maxKey1);
+        String maxKey2 = null;
+        int maxValue2 = 0;
+        for(String s : copy.keySet()) {
+            if(copy.get(s) > maxValue2) {
+                maxValue2 = copy.get(s);
+                maxKey2 = s;
+            }
+        }
+        copy.remove(maxKey2);
+        String maxKey3 = null;
+        int maxValue3 = 0;
+        for(String s : copy.keySet()) {
+            if(copy.get(s) > maxValue3) {
+                maxValue3 = copy.get(s);
+                maxKey3 = s;
+            }
+        }
+//        copy.remove(maxKey3);
+        this.maxThreeFields = new String[3];
+        this.maxThreeFields[0] = maxKey1;
+        this.maxThreeFields[1] = maxKey2;
+        this.maxThreeFields[2] = maxKey3;
 
         for(People people : this.dataset) {
             StringBuilder sortKey = new StringBuilder();
-            sortKey.append(getFirstThreeConsonant(people.getSurname()));
-            sortKey.append(getFirstThreeLetter(people.getGiven_name()));
+            int keyindex0 = this.fields.indexOf(this.maxThreeFields[0]);
+            int keyindex1 = this.fields.indexOf(this.maxThreeFields[1]);
+            int keyindex2 = this.fields.indexOf(this.maxThreeFields[2]);
+            StringBuilder part0 = getFirstThreeChar(people.getAttributeByIndex(keyindex0));
+            StringBuilder part1 = getFirstThreeChar(people.getAttributeByIndex(keyindex1));
+            StringBuilder part2 = getFirstThreeChar(people.getAttributeByIndex(keyindex2));
 
-            String s = people.getStreet_number();
-            StringBuilder sb = new StringBuilder();
-            sb.append(getFirstThreeNumber(s));
-            sb.append(getFirstThreeConsonant(people.getAddress_1()));
-            sortKey.append(sb);
+            String finalKey = sortKey.append(part0).append(part1).append(part2).toString();
 
-            people.setSortKey(sortKey.toString());
+            people.setSortKey(finalKey);
         }
+
+
+//        for(People people : this.dataset) {
+//            StringBuilder sortKey = new StringBuilder();
+//            sortKey.append(getFirstThreeConsonant(people.getSurname()));
+//            sortKey.append(getFirstThreeLetter(people.getGiven_name()));
+//
+//            String s = people.getStreet_number();
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(getFirstThreeNumber(s));
+//            sb.append(getFirstThreeConsonant(people.getAddress_1()));
+//            sortKey.append(sb);
+//
+//            people.setSortKey(sortKey.toString());
+//        }
+    }
+
+
+    //从string中提取前三个字符，不足三个用*补齐
+    private StringBuilder getFirstThreeChar(String s) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if(s != null && s.length() != 0) {
+            char[] chars = s.toCharArray();
+            for(char c : chars) {
+                if(stringBuilder.length() == 3) {
+                    break;
+                }
+                if(c!=' ') {
+                    stringBuilder.append(c);
+                }
+            }
+        }
+
+        //不足三个则用'*'补齐
+        while(stringBuilder.length() != 3) {
+            stringBuilder.append('*');
+        }
+        return stringBuilder;
     }
 
     //从string中提取前三个字母，不足三个用*补齐
