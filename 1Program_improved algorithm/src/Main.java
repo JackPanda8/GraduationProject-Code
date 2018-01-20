@@ -11,10 +11,13 @@ public class Main {
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5000-1000-5-2-2-uniform-all-0.csv";
 
+
     public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-20000-1000-5-2-2-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-50000-1000-5-2-2-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
+
+
     public static final int WINDOW_SIZE = 5;//滑动窗口的大小
     public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
     public static final double CLOSE_CONSTANT = 0.6;//暂时定义close的衡量尺度为相似度>=0.6,所以0.6~0.8即为close_but_not_much的范围
@@ -22,60 +25,183 @@ public class Main {
     private ArrayList<People> dataset;
     private ArrayList<String> fields;//所有的字段
     private HashMap<String, Integer> fieldsDifference;//每个字段对应的不同记录数，是该字段对于整体数据的一个区分度
-    private String[] maxThreeFields;
+    private ArrayList<String> sortedFieldsByDifference;
+    private HashMap<People, Integer> mapOfDatasetAfterSort;
     private ArrayList<People> datasetAfterSort;
+    private ArrayList<People> datasetAfterSort1;
+    private ArrayList<People> datasetAfterSort2;
+    private HashSet<Integer> indexOfTuplesWithIncompleteSortKey;//排序key是不完整的元组在datasetaftersort总的的索引位置集合
     private HashSet<People> duplicateTuples;
-    private int[][] duplicateMatrix;
+    //    private int[][] duplicateMatrix;
+    private HashMap<Integer, ArrayList<Integer>> duplicateList;//邻接链表替代邻接矩阵
     private ArrayList<People> cleanDataset;
+    private int totalDup;//算法检查出的总重复
+    private int actualTotalDup;//实际总重复数
+    private int trueDup;//算法中正确重复
+    private int[] flagForCountTrueDup;//为统计正确重复设立的flag数组
+    private int falseDup;//算法中错误重复
 
     public static void main(String[] args) throws IOException{
+        String datasetName = Main.DATA_SET;
+        String[] array = datasetName.split("-");
+        String stringValue = array[2];
+
         Main main = new Main();
+        main.actualTotalDup = Integer.valueOf(stringValue);
+        main.trueDup = 0;
+        main.falseDup = 0;
         main.getData();
+        int size = main.dataset.size();
+        main.flagForCountTrueDup = new int[size];
+        for(int i = 0; i < size; i++) {
+            main.flagForCountTrueDup[i] = 0;
+        }
+        main.sortByDiff();
+        main.formSet();//将people与duplicateList建立1对1的映射，以便计算传递闭包用
+
+        //第一趟
         main.generateKey();
         main.quickSort();
         main.slideWindowProcess(WINDOW_SIZE);
-        main.eliminateDuplication();
 
-        int numDup = 0;
-        int numOri = 0;
-        for(People p: main.duplicateTuples) {
-//            System.out.println(p.getRec_id());
-            String id = p.getRec_id();
-            if(id.contains("dup")) {
-                numDup++;
-            } else {
-                numOri++;
+        //第二趟
+        main.generateKey1();
+        main.quickSort1();
+        main.slideWindowProcess1(WINDOW_SIZE);
+
+        //第三趟
+        main.generateKey2();
+        main.quickSort2();
+        main.slideWindowProcess2(WINDOW_SIZE);
+
+        //将之前步骤积累的含有空排序字段的记录与已经合并过的记录集进行比较，发掘新的重复集合
+        int count = 0;
+        for(int i : main.indexOfTuplesWithIncompleteSortKey) {
+            if(main.duplicateList.get(i).isEmpty()) {
+                count++;
             }
         }
-        System.out.println("dup : "+numDup + ", ori : "+numOri);
+        System.out.println("含有空排序key并且没有与之重复的记录 = " + count);
+        main.cleanDataset = new ArrayList<People>();
+        main.eliminateDuplication();
+        main.processMarkedRecord();
+        main.eliminateDuplication();
+
+        main.evaluation();
 
     }
 
 
+    //衡量算法的查全率和查准率以及误识别率
+    private void evaluation() {
+        int totalDupNumber = 0;
+        int size = this.dataset.size();
+        int[] flagArray = new int[size];
+        for(int i = 0; i < size; i++) {
+            flagArray[i] = 0;
+        }
+        for(int i = 0; i < size; i++) {
+            ArrayList<Integer> list = this.duplicateList.get(i);
+            if(list.isEmpty()) {
+                flagArray[i] = 1;
+            } else {
+                if(flagArray[i] == 0) {
+                    flagArray[i] = 1;
+                    for(int e : list) {
+                        flagArray[e] = 1;
+                        totalDupNumber++;
+                    }
+                }
+            }
 
+        }
+
+        this.totalDup = totalDupNumber;
+        this.falseDup = this.totalDup - this.trueDup;
+
+        double chaquanlv = ((double)this.trueDup)/((double)this.actualTotalDup) * 100.0;
+        double chazhunlv = ((double)this.trueDup)/((double)this.totalDup) * 100.0;
+        double wushibielv = ((double)this.falseDup)/((double)this.totalDup) * 100.0;
+
+        System.out.println("改进算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
+    }
+
+
+    //[改进点2：处理被标记过并且无与之重复的记录，将其分别与已经归并过的记录进行比较]
+    private void processMarkedRecord() {
+        for(int index : this.indexOfTuplesWithIncompleteSortKey) {
+            if (this.duplicateList.get(index).isEmpty()) {
+                ArrayList<Integer> temp = new ArrayList<Integer>();
+
+                Iterator<People> iter = this.cleanDataset.iterator();
+                while(iter.hasNext()){
+                    People p = iter.next();
+                    if(judgeEqual(p, this.dataset.get(index))) {
+                        if(this.cleanDataset.contains(this.dataset.get(index))) {
+//                            this.cleanDataset.remove(this.dataset.get(index));
+                            temp.add(index);
+
+                        }
+
+                        int indexI = index;
+                        int indexTail = this.mapOfDatasetAfterSort.get(p);
+
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[index] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[index] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
+
+                    }
+                }
+
+                for(int ele : temp) {
+                    if(this.cleanDataset.contains(this.dataset.get(ele))) {
+                        this.cleanDataset.remove(this.dataset.get(ele));
+
+                    }
+                }
+
+            }
+        }
+    }
 
 
     //[5]消除重复
     private void eliminateDuplication() {
-        this.cleanDataset = new ArrayList<People>();
-        this.duplicateMatrix = TransitiveClosure.getTransitiveClosure(this.duplicateMatrix, this.datasetAfterSort.size());
+//        this.cleanDataset = new ArrayList<People>();
 
-//        for(int i = 0; i < this.datasetAfterSort.size(); i++) {
-//            int j = 0;
-//            for(; j < i; j++) {
-//                if(this.duplicateMatrix[i][j] == 1) {
-//                    break;
-//                }
-//            }
-//            if(j == i) {
-//                this.cleanDataset.add(this.datasetAfterSort.get(i));
-//            }
-//
-//        }
+//        this.duplicateMatrix = TransitiveClosure.getTransitiveClosure(this.duplicateMatrix, this.datasetAfterSort.size());
+        TransitiveClosure.getTransitiveClosureOfList(this.duplicateList);
 
-
-
-        int[] flagArray = new int[this.datasetAfterSort.size()];
+        int[] flagArray = new int[this.dataset.size()];
         for (int i = 0; i < flagArray.length; i++) {
             flagArray[i] = 0;
         }
@@ -83,12 +209,11 @@ public class Main {
         for (int i = 0; i < flagArray.length; i++) {
             if(flagArray[i] == 0) {
                 flagArray[i] = 1;
-                this.cleanDataset.add(this.datasetAfterSort.get(i));
-                for(int j = 0; j < flagArray.length; j++) {
-                    if(this.duplicateMatrix[i][j] == 1) {
-                        flagArray[j] = 1;
-                    }
-
+                if(!this.cleanDataset.contains(this.dataset.get(i))) {
+                    this.cleanDataset.add(this.dataset.get(i));
+                }
+                for(int temp : this.duplicateList.get(i)) {
+                    flagArray[temp] = 1;
                 }
             } else {
                 continue;
@@ -101,18 +226,19 @@ public class Main {
 
 
 
-    //[4]滑动窗口归并,w是滑动窗口的大小
+    //[4.1]滑动窗口归并,w是滑动窗口的大小
     private void slideWindowProcess(int w) {
         if(w > this.datasetAfterSort.size()) {
             System.out.println("Error：滑动窗口的大小" + w + "超过了数据集的大小" + this.datasetAfterSort.size());
         }
 
         int size = this.datasetAfterSort.size();
-        this.duplicateMatrix = new int[size][size];
+//        this.duplicateMatrix = new int[size][size];
+        this.duplicateList = new HashMap<Integer, ArrayList<Integer>>();
+
         for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                this.duplicateMatrix[i][j] = 0;
-            }
+            ArrayList<Integer> tempList = new ArrayList<Integer>();
+            this.duplicateList.put(i, tempList);
         }
 
 //        int tail = w-1;
@@ -124,22 +250,274 @@ public class Main {
                 for(int i = 0; i < tail; i++) {
                     People tempPeople = this.datasetAfterSort.get(i);
                     if(judgeEqual(tempPeople, tailPeople)) {
-                        this.duplicateTuples.add(this.datasetAfterSort.get(i));
-                        this.duplicateTuples.add(this.datasetAfterSort.get(tail));
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort.get(tail));
 
-                        this.duplicateMatrix[tail][i] = 1;
-                        this.duplicateMatrix[i][tail] = 1;
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
                     }
                 }
             } else {
                 for(int i = tail-w+1; i < tail; i++) {
                     People tempPeople = this.datasetAfterSort.get(i);
                     if(judgeEqual(tempPeople, tailPeople)) {
-                        this.duplicateTuples.add(this.datasetAfterSort.get(i));
-                        this.duplicateTuples.add(this.datasetAfterSort.get(tail));
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort.get(tail));
 
-                        this.duplicateMatrix[tail][i] = 1;
-                        this.duplicateMatrix[i][tail] = 1;
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            tail++;
+        }
+    }
+
+    //[4.2]滑动窗口归并,w是滑动窗口的大小
+    private void slideWindowProcess1(int w) {
+        if(w > this.datasetAfterSort1.size()) {
+            System.out.println("Error：滑动窗口的大小" + w + "超过了数据集的大小" + this.datasetAfterSort.size());
+        }
+
+        int tail = 0;
+        while(tail < this.datasetAfterSort1.size()) {
+            People tailPeople = this.datasetAfterSort1.get(tail);
+            if(tail < w-1) {//比较起始情况下，前w大小的滑动窗口内重复记录
+                for(int i = 0; i < tail; i++) {
+                    People tempPeople = this.datasetAfterSort1.get(i);
+                    if(judgeEqual(tempPeople, tailPeople)) {
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort1.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort1.get(tail));
+
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            } else {
+                for(int i = tail-w+1; i < tail; i++) {
+                    People tempPeople = this.datasetAfterSort1.get(i);
+                    if(judgeEqual(tempPeople, tailPeople)) {
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort1.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort1.get(tail));
+
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            tail++;
+        }
+    }
+
+    //[4.3]滑动窗口归并,w是滑动窗口的大小
+    private void slideWindowProcess2(int w) {
+        if(w > this.datasetAfterSort2.size()) {
+            System.out.println("Error：滑动窗口的大小" + w + "超过了数据集的大小" + this.datasetAfterSort.size());
+        }
+
+        int tail = 0;
+        while(tail < this.datasetAfterSort2.size()) {
+            People tailPeople = this.datasetAfterSort2.get(tail);
+            if(tail < w-1) {//比较起始情况下，前w大小的滑动窗口内重复记录
+                for(int i = 0; i < tail; i++) {
+                    People tempPeople = this.datasetAfterSort2.get(i);
+                    if(judgeEqual(tempPeople, tailPeople)) {
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort2.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort2.get(tail));
+
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            } else {
+                for(int i = tail-w+1; i < tail; i++) {
+                    People tempPeople = this.datasetAfterSort2.get(i);
+                    if(judgeEqual(tempPeople, tailPeople)) {
+                        int indexI = this.mapOfDatasetAfterSort.get(this.datasetAfterSort2.get(i));
+                        int indexTail = this.mapOfDatasetAfterSort.get(this.datasetAfterSort2.get(tail));
+
+                        this.duplicateTuples.add(this.dataset.get(indexI));
+                        this.duplicateTuples.add(this.dataset.get(indexTail));
+
+                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                            this.duplicateList.get(indexTail).add(indexI);
+                        }
+                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                            this.duplicateList.get(indexI).add(indexTail);
+                        }
+
+                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
+                            //统计正确重复数目
+                            String s1 = this.dataset.get(indexI).getRec_id();
+                            String s2 = this.dataset.get(indexTail).getRec_id();
+                            String[] array1 = s1.split("-");
+                            String[] array2 = s2.split("-");
+                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                                if(this.flagForCountTrueDup[indexI] == 0) {
+                                    if(array1[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexI] = 1;
+                                }
+                                if(this.flagForCountTrueDup[indexTail] == 0) {
+                                    if(array2[2].equals("dup")) {
+                                        this.trueDup++;
+                                    }
+                                    this.flagForCountTrueDup[indexTail] = 1;
+                                }
+                            }
+                        }
+
                     }
                 }
             }
@@ -395,7 +773,7 @@ public class Main {
 
 
 
-    //[3]排序，使用快速排序
+    //[3.1]排序，使用快速排序
     private void quickSort(){
         People[] arr = new People[this.dataset.size()];
         for(int i = 0; i < this.dataset.size(); i++) {
@@ -406,6 +784,32 @@ public class Main {
         for(People people : arr) {
 //            System.out.println(people.getSortKey());
             this.datasetAfterSort.add(people);
+        }
+    }
+    //[3.2]排序，使用快速排序
+    private void quickSort1(){
+        People[] arr = new People[this.dataset.size()];
+        for(int i = 0; i < this.dataset.size(); i++) {
+            arr[i] = this.dataset.get(i);
+        }
+        qsort(arr, 0, arr.length-1);
+        this.datasetAfterSort1 = new ArrayList<People>();
+        for(People people : arr) {
+//            System.out.println(people.getSortKey());
+            this.datasetAfterSort1.add(people);
+        }
+    }
+    //[3.3]排序，使用快速排序
+    private void quickSort2(){
+        People[] arr = new People[this.dataset.size()];
+        for(int i = 0; i < this.dataset.size(); i++) {
+            arr[i] = this.dataset.get(i);
+        }
+        qsort(arr, 0, arr.length-1);
+        this.datasetAfterSort2 = new ArrayList<People>();
+        for(People people : arr) {
+//            System.out.println(people.getSortKey());
+            this.datasetAfterSort2.add(people);
         }
     }
 
@@ -470,7 +874,8 @@ public class Main {
     //【改进点1】
     //1.首先统计每个字段的区分度：即在该字段下不同记录的个数
     //2.每次选择区分度较大的字段作为排序用的关键字
-    private void generateKey() {
+
+    private void sortByDiff() {
         this.fieldsDifference = new HashMap<String, Integer>();
         int iterator = 0;
         for(String field : this.fields) {
@@ -509,76 +914,130 @@ public class Main {
             iterator++;
         }
 
-        //取出来区分度前三大的字段
+
         HashMap<String, Integer> copy = new HashMap<String, Integer>();
         for(int i = 0; i < this.fieldsDifference.keySet().size(); i++) {
             String tempKey = (String) this.fieldsDifference.keySet().toArray()[i];
             copy.put(tempKey, this.fieldsDifference.get(tempKey));
         }
-        String maxKey1 = null;
-        int maxValue1 = 0;
-        for(String s : copy.keySet()) {
-            if(copy.get(s) > maxValue1) {
-                maxValue1 = copy.get(s);
-                maxKey1 = s;
-            }
-        }
-        copy.remove(maxKey1);
-        String maxKey2 = null;
-        int maxValue2 = 0;
-        for(String s : copy.keySet()) {
-            if(copy.get(s) > maxValue2) {
-                maxValue2 = copy.get(s);
-                maxKey2 = s;
-            }
-        }
-        copy.remove(maxKey2);
-        String maxKey3 = null;
-        int maxValue3 = 0;
-        for(String s : copy.keySet()) {
-            if(copy.get(s) > maxValue3) {
-                maxValue3 = copy.get(s);
-                maxKey3 = s;
-            }
-        }
-//        copy.remove(maxKey3);
-        this.maxThreeFields = new String[3];
-        this.maxThreeFields[0] = maxKey1;
-        this.maxThreeFields[1] = maxKey2;
-        this.maxThreeFields[2] = maxKey3;
 
+
+        List<Map.Entry<String, Integer>> tempList =
+                new ArrayList<Map.Entry<String, Integer>>(this.fieldsDifference.entrySet());
+
+        //排序
+        Collections.sort(tempList, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return (o2.getValue() - o1.getValue());
+//                return (o1.getKey()).toString().compareTo(o2.getKey());
+            }
+        });
+
+        this.sortedFieldsByDifference = new ArrayList<String>();
+        for(Map.Entry<String, Integer> entry : tempList) {
+            String value = entry.getKey();
+            this.sortedFieldsByDifference.add(value);
+        }
+
+
+    }
+
+
+    private void generateKey() {
+        this.indexOfTuplesWithIncompleteSortKey = new HashSet<Integer>();
         for(People people : this.dataset) {
             StringBuilder sortKey = new StringBuilder();
-            int keyindex0 = this.fields.indexOf(this.maxThreeFields[0]);
-            int keyindex1 = this.fields.indexOf(this.maxThreeFields[1]);
-            int keyindex2 = this.fields.indexOf(this.maxThreeFields[2]);
-            StringBuilder part0 = getFirstThreeChar(people.getAttributeByIndex(keyindex0));
-            StringBuilder part1 = getFirstThreeChar(people.getAttributeByIndex(keyindex1));
-            StringBuilder part2 = getFirstThreeChar(people.getAttributeByIndex(keyindex2));
+            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
+            int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
+            String s0 = people.getAttributeByIndex(keyindex0);
+            if(s0 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part0 = getFirstThreeChar(s0);
+
+            String s1 = people.getAttributeByIndex(keyindex1);
+            if(s1 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part1 = getFirstThreeChar(s1);
+
+            String s2 = people.getAttributeByIndex(keyindex2);
+            if(s2 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part2 = getFirstThreeChar(s2);
 
             String finalKey = sortKey.append(part0).append(part1).append(part2).toString();
 
             people.setSortKey(finalKey);
         }
 
-
-//        for(People people : this.dataset) {
-//            StringBuilder sortKey = new StringBuilder();
-//            sortKey.append(getFirstThreeConsonant(people.getSurname()));
-//            sortKey.append(getFirstThreeLetter(people.getGiven_name()));
-//
-//            String s = people.getStreet_number();
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(getFirstThreeNumber(s));
-//            sb.append(getFirstThreeConsonant(people.getAddress_1()));
-//            sortKey.append(sb);
-//
-//            people.setSortKey(sortKey.toString());
-//        }
     }
 
+    private void generateKey1() {
+        for(People people : this.dataset) {
+            StringBuilder sortKey = new StringBuilder();
+            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
+            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+            int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
+            String s0 = people.getAttributeByIndex(keyindex0);
+            if(s0 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part0 = getFirstThreeChar(s0);
 
-    //从string中提取前三个字符，不足三个用*补齐
+            String s1 = people.getAttributeByIndex(keyindex1);
+            if(s1 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part1 = getFirstThreeChar(s1);
+
+            String s2 = people.getAttributeByIndex(keyindex2);
+            if(s2 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part2 = getFirstThreeChar(s2);
+
+            String finalKey = sortKey.append(part0).append(part1).append(part2).toString();
+
+            people.setSortKey(finalKey);
+        }
+
+    }
+
+    private void generateKey2() {
+        for(People people : this.dataset) {
+            StringBuilder sortKey = new StringBuilder();
+            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
+            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+            int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(3));
+            String s0 = people.getAttributeByIndex(keyindex0);
+            if(s0 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part0 = getFirstThreeChar(s0);
+
+            String s1 = people.getAttributeByIndex(keyindex1);
+            if(s1 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part1 = getFirstThreeChar(s1);
+
+            String s2 = people.getAttributeByIndex(keyindex2);
+            if(s2 == null) {
+                this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
+            }
+            StringBuilder part2 = getFirstThreeChar(s2);
+
+            String finalKey = sortKey.append(part0).append(part1).append(part2).toString();
+
+            people.setSortKey(finalKey);
+        }
+
+    }
+
+    //从string中提取前三个字符，不足三个用*补齐，若为空则返回null
     private StringBuilder getFirstThreeChar(String s) {
         StringBuilder stringBuilder = new StringBuilder();
         if(s != null && s.length() != 0) {
@@ -674,7 +1133,14 @@ public class Main {
     }
 
 
-
+    private void formSet() {
+        this.mapOfDatasetAfterSort = new HashMap<People, Integer>();
+        int index = 0;
+        for(People p : this.dataset) {
+            this.mapOfDatasetAfterSort.put(p, index);
+            index++;
+        }
+    }
 
 
     //[1]读取数据
