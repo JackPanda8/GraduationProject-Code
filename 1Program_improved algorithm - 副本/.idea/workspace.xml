@@ -11,7 +11,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/1Program_improved_algorithm___$Main.coverage" NAME="Main Coverage Results" MODIFIED="1516247607283" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/1Program_improved_algorithm___$Main.coverage" NAME="Main Coverage Results" MODIFIED="1516436062847" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
@@ -19,8 +19,8 @@
       <file leaf-file-name="Main.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="658">
-              <caret line="1028" column="55" lean-forward="false" selection-start-line="1028" selection-start-column="21" selection-end-line="1028" selection-end-column="55" />
+            <state relative-caret-position="242">
+              <caret line="1012" column="65" lean-forward="false" selection-start-line="1012" selection-start-column="65" selection-end-line="1012" selection-end-column="65" />
               <folding />
             </state>
           </provider>
@@ -637,12 +637,12 @@
       <workItem from="1516070047194" duration="12001000" />
       <workItem from="1516158262209" duration="11109000" />
       <workItem from="1516242845425" duration="4189000" />
-      <workItem from="1516359943104" duration="3467000" />
+      <workItem from="1516359943104" duration="3566000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="74055000" />
+    <option name="totallyTimeSpent" value="74154000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -2122,8 +2122,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="658">
-          <caret line="1028" column="55" lean-forward="false" selection-start-line="1028" selection-start-column="21" selection-end-line="1028" selection-end-column="55" />
+        <state relative-caret-position="242">
+          <caret line="1012" column="65" lean-forward="false" selection-start-line="1012" selection-start-column="65" selection-end-line="1012" selection-end-column="65" />
           <folding />
         </state>
       </provider>
