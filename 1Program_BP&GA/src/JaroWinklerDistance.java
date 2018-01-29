@@ -84,6 +84,10 @@ public class JaroWinklerDistance {
     }
 
     public float getDistance(String s1, String s2) {
+        if(s1 == null || s2 == null) {
+            return 0.0f;
+        }
+
         int[] mtp = matches(s1, s2);
         //  返回匹配数目（m）
         float m = (float) mtp[0];

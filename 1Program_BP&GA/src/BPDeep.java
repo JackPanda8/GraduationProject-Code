@@ -32,10 +32,10 @@ public class BPDeep{
     public double[] computeOut(double[] in){
         for(int l=1;l<layer.length;l++){
             for(int j=0;j<layer[l].length;j++){
-                double z=layer_weight[l-1][layer[l-1].length][j];
+                double z=layer_weight[l-1] [layer[l-1].length] [j];
                 for(int i=0;i<layer[l-1].length;i++){
                     layer[l-1][i]=l==1?in[i]:layer[l-1][i];
-                    z+=layer_weight[l-1][i][j]*layer[l-1][i];
+                    z+=layer_weight[l-1] [i] [j] * layer[l-1][i];
                 }
                 layer[l][j]=1/(1+Math.exp(-z));
             }

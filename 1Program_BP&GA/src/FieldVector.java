@@ -181,4 +181,84 @@ public class FieldVector {
         this.similarity16 = similarity16;
     }
 
+    public double getAttributeByIndex(int index) {
+        double r = 0.0;
+        switch(index) {
+            case 0 : {
+                r = getSimilarity0();
+                break;
+            }
+            case  1: {
+                r = getSimilarity1();
+                break;
+            }
+            case  2: {
+                r = getSimilarity2();
+                break;
+            }
+            case  3: {
+                r = getSimilarity3();
+                break;
+            }
+            case  4: {
+                r = getSimilarity4();
+                break;
+            }
+            case  5: {
+                r = getSimilarity5();
+                break;
+            }
+            case  6: {
+                r = getSimilarity6();
+                break;
+            }
+            case  7: {
+                r = getSimilarity7();
+                break;
+            }
+            case  8: {
+                r = getSimilarity8();
+                break;
+            }
+            case  9: {
+                r = getSimilarity9();
+                break;
+            }
+            case  10: {
+                r = getSimilarity10();
+                break;
+            }
+            case  11: {
+                r = getSimilarity11();
+                break;
+            }
+            case  12: {
+                r = getSimilarity12();
+                break;
+            }
+            case  13: {
+                r = getSimilarity13();
+                break;
+            }
+            case  14: {
+                r = getSimilarity14();
+                break;
+            }
+            case  15: {
+                r = getSimilarity15();
+                break;
+            }
+            case  16: {
+                r = getSimilarity16();
+                break;
+            }
+
+            default: {
+                r =  0.0;
+                break;
+            }
+        }
+        return r;
+    }
+
 }
