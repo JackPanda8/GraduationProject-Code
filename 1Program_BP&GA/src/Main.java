@@ -1,7 +1,6 @@
-import com.sun.javaws.exceptions.ExitException;
-
-import java.io.IOException;
 import java.util.*;
+import com.sun.javaws.exceptions.ExitException;
+import java.io.IOException;
 
 public class Main {
 
@@ -91,14 +90,12 @@ public class Main {
 //            }
 //        }
 //    }
+
     private static final float PORTION = 0.3f;
     private static final int TRAINING_NUMBER = 3000;
     private static final float THRESHOLD = 0.8f;
 
     public static void main(String[] args) {
-        //初始化神经网络的基本配置
-        //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
-        //第二个参数是学习步长，第三个参数是动量系数
         Data data = new Data();
         try {
             data.getTrainData(PORTION);
@@ -133,6 +130,9 @@ public class Main {
 
         }
 
+        //初始化神经网络的基本配置
+        //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
+        //第二个参数是学习步长，第三个参数是动量系数
         BPDeep bp = new BPDeep(new int[]{inputLayerNumber,hiddenLayerNumber,1}, 0.15, 0.8);
 
 
