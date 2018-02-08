@@ -94,6 +94,7 @@ public class Main {
     private static final float PORTION = 0.3f;
     private static final int TRAINING_NUMBER = 3000;
     private static final float THRESHOLD = 0.8f;
+    private ArrayList<BPDeep> bpList;
 
     public static void main(String[] args) {
         Data data = new Data();
@@ -106,6 +107,10 @@ public class Main {
         int hiddenLayerNumber = data.getHiddenNumber();
         int recordsNumber = data.getTrainRecord().size();
 
+        //设置样本数据，对应上面的4个二维坐标数据
+//        double[][] data = new double[][]{{1,2},{2,2},{1,1},{2,1}};
+        //设置目标数据，对应4个坐标数据的分类
+//        double[][] target = new double[][]{{1,0},{0,1},{0,1},{1,0}};
         FieldVector[] trainInput = data.getTrainInput();
         int inputSize = trainInput.length;
         double[][] inputdata = new double[inputSize][inputLayerNumber];
@@ -134,12 +139,6 @@ public class Main {
         //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
         //第二个参数是学习步长，第三个参数是动量系数
         BPDeep bp = new BPDeep(new int[]{inputLayerNumber,hiddenLayerNumber,1}, 0.15, 0.8);
-
-
-        //设置样本数据，对应上面的4个二维坐标数据
-//        double[][] data = new double[][]{{1,2},{2,2},{1,1},{2,1}};
-        //设置目标数据，对应4个坐标数据的分类
-//        double[][] target = new double[][]{{1,0},{0,1},{0,1},{1,0}};
 
         //迭代训练5000次
         for(int n=0;n<TRAINING_NUMBER;n++)
@@ -238,7 +237,6 @@ public class Main {
 
                 }
             }
-
 
         }
 

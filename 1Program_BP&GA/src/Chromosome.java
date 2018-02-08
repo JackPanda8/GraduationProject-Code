@@ -104,30 +104,40 @@ public class Chromosome {
      * @param num
      * @Description: 基因num个位置发生变异
      */
-    public void mutation(int num) {
-        //允许变异
-        int size = gene.length;
-        for (int i = 0; i < num; i++) {
-            //这里的变异
-
-            //寻找变异位置
-            int at = ((int) (Math.random() * size)) % size;
-            //变异后的值
-            float bool = !gene[at];
-
-            gene[at] = bool;
-        }
-    }
+//    public void mutation(int num) {
+//        //允许变异
+//        int size = gene.length;
+//        for (int i = 0; i < num; i++) {
+//            //这里的变异
+//
+//            //寻找变异位置
+//            int at = ((int) (Math.random() * size)) % size;
+//            //变异后的值
+//            float bool = !gene[at];
+//
+//            gene[at] = bool;
+//        }
+//    }
 
     /**
      * 随着迭代次数的增加，发生的变异量接近于0，这样选取的函数允许这个算子
      在开始阶段搜索这个空间，在算法的后阶段进行局部搜索。
-     * @param position 发生变异的位置
+     * @param position 发生变异的位置,从0开始
      * @param curGeneration 当前的代数
      * @param maxGene 当前代中的各位置基因的最大值
      * @param T 预先设定的最大迭代数
+     * @Description 论文中发生变异的实现方法
      */
     public void mutation(int position, int curGeneration, float maxGene, int T) {
-        
+        float r = (float) Math.random();
+        float m = (float) Math.random();
+        double delta = (maxGene - gene[position])*(1.0 - (float)Math.pow(m, (1.0 - (double)curGeneration)/(double)T));
+        if(r <= 0.5) {
+            gene[position] = gene[position] + (float)delta;
+        } else {
+            gene[position] = gene[position] - (float)delta;
+        }
     }
+
+
 }

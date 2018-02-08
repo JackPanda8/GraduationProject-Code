@@ -8,6 +8,7 @@ public class BPDeep{
     public double mobp;//动量系数
     public double rate;//学习系数
 
+
     public BPDeep(int[] layernum, double rate, double mobp){
         this.mobp = mobp;
         this.rate = rate;
