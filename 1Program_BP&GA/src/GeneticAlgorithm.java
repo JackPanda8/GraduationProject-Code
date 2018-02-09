@@ -6,7 +6,12 @@ public abstract class GeneticAlgorithm {
     private int geneSize;//基因最大长度
     private int maxIterNum = 500;//最大迭代次数
     private double mutationRate = 0.01;//基因变异的概率
-    private int maxMutationNum = 3;//最大变异步长
+    private double mutationMaxScale = 0.3;//变异的最大长度占染色体总长度的比例scale
+    private double mutationMinScale = 0.01;//变异的最小长度占染色体总长度的比例scale
+//    private int maxMutationNum = 3;//最大变异步长
+    private double crossoverRate = 0.6;//染色体交叉的概率
+    private double crossoverMaxScale = 0.3;//交叉的最大长度占染色体总长度的比例scale
+    private double crossoverMinScale = 0.01;//交叉的最小长度占染色体总长度的比例scale
 
     private int generation = 1;//当前遗传到第几代
 
@@ -22,12 +27,19 @@ public abstract class GeneticAlgorithm {
     public GeneticAlgorithm(int geneSize) {
         this.geneSize = geneSize;
     }
-    public GeneticAlgorithm(int geneSize, int popSize, int maxIterNum, double mutationRate, int maxMutationNum) {
+    public GeneticAlgorithm(int geneSize, int popSize, int maxIterNum,
+                            double mutationRate, double mutationMaxScale, double mutationMinScale,
+                            double crossoverRate, double crossoverMaxScale, double crossoverMinScale ) {
         this.geneSize = geneSize;
         this.popSize = popSize;
         this.maxIterNum = maxIterNum;
         this.mutationRate = mutationRate;
-        this.maxMutationNum = maxMutationNum;
+//        this.maxMutationNum = maxMutationNum;
+        this.mutationMaxScale = mutationMaxScale;
+        this.mutationMinScale = mutationMinScale;
+        this.crossoverRate = crossoverRate;
+        this.crossoverMaxScale = crossoverMaxScale;
+        this.crossoverMinScale = crossoverMinScale;
     }
 
     public void caculte(ArrayList<Chromosome> population) {
@@ -90,18 +102,15 @@ public abstract class GeneticAlgorithm {
             //选择
             Chromosome p1 = getParentChromosome();
             Chromosome p2 = getParentChromosome();
-            List<Chromosome> children = Chromosome.genetic(p1, p2);
+//            List<Chromosome> children = Chromosome.genetic(p1, p2);
 
             //交叉
-            crossover();
+            crossover(p1, p2);
             //基因突变
-            mutation();
+            mutation(p1, p2);
 
-            if (children != null) {
-                for (Chromosome chro : children) {
-                    childPopulation.add(chro);
-                }
-            }
+            childPopulation.add(p1);
+            childPopulation.add(p2);
         }
         //新种群替换旧种群
         List<Chromosome> t = population;
@@ -159,21 +168,40 @@ public abstract class GeneticAlgorithm {
 
     /**
      * @return
-     * @Description: 【交叉】
+     * @Description: 【交叉】：适应度高，交叉的部分少,(1-0.5*((y1+y2)/ymax)) * (交叉范围)
      */
-    private Chromosome crossover (){
-
+    private void crossover (Chromosome p1, Chromosome p2){
+        if (Math.random() < crossoverRate) { //发生交叉
+            int maxCrossoverSize = (int)(geneSize*crossoverMaxScale);
+            int minCrossoverSize = (int)(geneSize*crossoverMinScale);
+            int crossoverSize = (int)( (1 - 0.5*((p1.getScore()+p2.getScore())/y)) *
+                    (maxCrossoverSize-minCrossoverSize) );
+            int maxStart = geneSize - crossoverSize;
+            int actualStart = (int)(Math.random() * (maxStart+1) );//随机得到的产生交叉操作的起始位置
+            for(int i = actualStart; i < crossoverSize; i++) {
+                float temp = p1.getGene()[i];
+                p1.setGeneAtPos(i, p2.getGene()[i]);
+                p2.setGeneAtPos(i, temp);
+            }
+        }
     }
 
     /**
-     * 【变异】基因突变
+     * 【变异】基因突变：适应度越高，变异位数越小
      */
-    private void mutation() {
-        for (Chromosome chro : population) {
-            if (Math.random() < mutationRate) { //发生基因突变
-                int mutationNum = (int) (Math.random() * maxMutationNum);
-                chro.mutation(mutationNum);
+    private void mutation(Chromosome p1, Chromosome p2) {
+        if (Math.random() < mutationRate) { //发生基因突变
+            int maxMutationSize = (int)(geneSize*mutationMaxScale);
+            int minMutationSize = (int)(geneSize*mutationMinScale);
+            int mutationSize = (int)( (1 - 0.5*((p1.getScore()+p2.getScore())/y)) *
+                    (maxMutationSize-minMutationSize) );
+            int maxStart = geneSize - mutationSize;
+            int actualStart = (int)(Math.random() * (maxStart+1) );//随机得到的产生交叉操作的起始位置
+            for(int i = actualStart; i < actualStart; i++) {
+                p1.mutation(i, generation, maxIterNum);
+                p2.mutation(i, generation, maxIterNum);
             }
+
         }
     }
 
@@ -226,9 +254,9 @@ public abstract class GeneticAlgorithm {
         this.mutationRate = mutationRate;
     }
 
-    public void setMaxMutationNum(int maxMutationNum) {
-        this.maxMutationNum = maxMutationNum;
-    }
+//    public void setMaxMutationNum(int maxMutationNum) {
+//        this.maxMutationNum = maxMutationNum;
+//    }
 
     public double getBestScore() {
         return bestScore;
@@ -246,7 +274,7 @@ public abstract class GeneticAlgorithm {
         return averageScore;
     }
 
-    public double getX() {
+    public Chromosome getX() {
         return x;
     }
 

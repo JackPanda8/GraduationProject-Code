@@ -1,6 +1,18 @@
 import java.util.*;
 
 public class Chromosome {
+    public float[] getGene() {
+        return gene;
+    }
+
+    public void setGene(float[] gene) {
+        this.gene = gene;
+    }
+
+    public void setGeneAtPos(int pos, float value) {
+        this.gene[pos] = value;
+    }
+
     //基因序列，采用实数编码。每个个体均为一个实数串，
     // 由输入层和隐含层连接权值、隐含层阈值、隐含层与输出层连接权值以及输出层阈值4个部分组成。【实际上我的程序只有三个部分】
     // 个体包含了神经网络全部的权值和阈值，在网路结构一直的情况下，就可以构成一个结构、权值、阈值确定的神经网络。
@@ -124,11 +136,17 @@ public class Chromosome {
      在开始阶段搜索这个空间，在算法的后阶段进行局部搜索。
      * @param position 发生变异的位置,从0开始
      * @param curGeneration 当前的代数
-     * @param maxGene 当前代中的各位置基因的最大值
+//     * @param maxGene 当前代中的各位置基因的最大值
      * @param T 预先设定的最大迭代数
      * @Description 论文中发生变异的实现方法
      */
-    public void mutation(int position, int curGeneration, float maxGene, int T) {
+    public void mutation(int position, int curGeneration, int T) {
+        float maxGene = gene[0];
+        for(float t : gene) {
+            if(maxGene < t) {
+                maxGene = t;
+            }
+        }
         float r = (float) Math.random();
         float m = (float) Math.random();
         double delta = (maxGene - gene[position])*(1.0 - (float)Math.pow(m, (1.0 - (double)curGeneration)/(double)T));
