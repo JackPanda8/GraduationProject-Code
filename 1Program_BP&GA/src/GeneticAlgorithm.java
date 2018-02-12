@@ -24,6 +24,7 @@ public abstract class GeneticAlgorithm {
     private double y; //记录历史种群中最好的Y值
     private int geneI;//x y所在代数
 
+    public GeneticAlgorithm(){}
     public GeneticAlgorithm(int geneSize) {
         this.geneSize = geneSize;
     }
@@ -42,7 +43,7 @@ public abstract class GeneticAlgorithm {
         this.crossoverMinScale = crossoverMinScale;
     }
 
-    public void caculte(ArrayList<Chromosome> population) {
+    public void caculate(ArrayList<Chromosome> population) {
         //初始化种群
         generation = 1;
 //        init();
@@ -233,6 +234,7 @@ public abstract class GeneticAlgorithm {
      * @Description: 适应度函数：根据X计算Y值 Y=F(X)
      */
     public abstract double caculateY(Chromosome x);
+//    public abstract double caculateY(HashMap<Double, Double> expectedAndActual);
 
     public void setPopulation(List<Chromosome> population) {
         this.population = population;
