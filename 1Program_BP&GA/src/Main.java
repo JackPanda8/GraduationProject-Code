@@ -1,17 +1,15 @@
 import java.util.*;
-import com.sun.javaws.exceptions.ExitException;
-import java.io.IOException;
 
 public class Main extends GeneticAlgorithm{
     private static final float PORTION = 0.3f;
-    private static final int TRAINING_NUMBER = 3000;
-    private static final float THRESHOLD = 0.8f;
+    private static final int TRAINING_NUMBER = 3000;//神经网络的训练次数
+    private static final float THRESHOLD = 0.8f;//神经网络的输出层阈值
+
     private static final int POPULATION_SIZE = 20;//种群数量设置
 
     private ArrayList<BPDeep> bpList;//神经网络组成的种群
-    private ArrayList<Double> fitnessList;//种群中的每一个神经网络对应的适应度函数
-
-    private HashMap<Double, Double> expectedAndActual;//key：期望输出 value：实际输出
+    private ArrayList<Chromosome> population;//种群
+    private ArrayList<HashMap<Double, Double>> expectedAndActual;//种群中染色体对应的期望输出与实际输出，key：期望输出 value：实际输出
 
     public Main() {
         super(10000, 100, 500, 0.01, 0.3, 0.01, 0.6, 0.3, 0.01);
@@ -59,8 +57,12 @@ public class Main extends GeneticAlgorithm{
         }
 
         //初始化神经网络的基本配置
-        //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
+        //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示
+        // 输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
         //第二个参数是学习步长，第三个参数是动量系数
+
+
+
 
         //【1】随机初始化POPULATION_SIZE个BP网络；并进行迭代训练
         main.bpList = new ArrayList<BPDeep>(POPULATION_SIZE);
@@ -76,13 +78,46 @@ public class Main extends GeneticAlgorithm{
         }
 
         //由bpList初始化种群
-        ArrayList<Chromosome> population = new ArrayList<Chromosome>();
-        
+        main.population = new ArrayList<Chromosome>(POPULATION_SIZE);
+        for(BPDeep bpDeep : main.bpList) {
+             int geneNumber = 0;
+             int layerInputNum = bpDeep.layernum[0] + 1;
+             int layerHiddenNum = bpDeep.layernum[1] + 1;
+             int layerOutputNum = 1;
+            // 由输入层和隐含层连接权值、隐含层阈值、隐含层与输出层连接权值以及输出层阈值4个部分组成。【实际上我的程序只有三个部分】
+             geneNumber = layerInputNum*(layerHiddenNum - 1) + layerHiddenNum*1 + 1;
+             ArrayList<Float> temp = new ArrayList<Float>();
+             //得到输入层与隐含层之间的边的权值
+             for(int i = 0; i < layerInputNum+1; i++) {
+                 for(int j = 0; j < layerHiddenNum; j++) {
+                     float weight = (float)bpDeep.layer_weight[0][i][j];
+                     temp.add(weight);
+                 }
+             }
+            //得到隐含层与输出层之间的边的权值
+            for(int i = 0; i < layerHiddenNum+1; i++) {
+                for(int j = 0; j < 1; j++) {
+                    float weight = (float)bpDeep.layer_weight[1][i][j];
+                    temp.add(weight);
+                }
+            }
+            temp.add(THRESHOLD);
+            //得到染色体的基因数组
+            float[] gene = new float[geneNumber];
+            for(int i = 0; i < geneNumber; i++) {
+                gene[i] = temp.get(i);
+            }
+            //初始化染色体
+            Chromosome chromosome = new Chromosome(gene);
+            main.population.add(chromosome);
+
+        }
+
 
         //【2】使用GA算法进行种群调整
-        main.expectedAndActual = new HashMap<Double, Double>();
+        main.expectedAndActual = new ArrayList<HashMap<Double, Double>>(POPULATION_SIZE);
         for(BPDeep bpDeep : main.bpList) {
-            main.expectedAndActual.clear();
+            HashMap<Double, Double> map = new HashMap<Double, Double>();
             for(int j=0;j<inputSize;j++){
                 double[] result = bpDeep.computeOut(inputdata[j]);
                 ArrayList<People> tempData = data.getDataset();
@@ -98,22 +133,26 @@ public class Main extends GeneticAlgorithm{
                 //得到该染色体的实际输出和理论输出
                 if(array1[1].equals(array2[1])) {
                     double actual = (result[0] > THRESHOLD)?(1.0):(0.0);
-                    main.expectedAndActual.put(1.0, actual);
+                    map.put(1.0, actual);
+                    main.expectedAndActual.add(map);
                 } else {
                     double actual = (result[0] < 1-THRESHOLD)?(0.0):(1.0);
-                    main.expectedAndActual.put(0.0, actual);
+                    map.put(0.0, actual);
+                    main.expectedAndActual.add(map);
                 }
             }
-
-
-            main.caculate(population);
-
         }
+        //使用GA进行种群的调整，跳出局部最优
+        main.caculate(main.population);
+
 
         //【3】再次对BP神经网络进行迭代训练
-        for (int n = 0; n < TRAINING_NUMBER; n++) {
-            for (int i = 0; i < inputSize; i++) {
-                bp.train(inputdata[i], target[i]);
+        for(int i = 0; i < POPULATION_SIZE; i++) {
+            BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, 0.15, 0.8);
+            for (int n = 0; n < TRAINING_NUMBER; n++) {
+                for (int j = 0; j < inputSize; j++) {
+                    bp.train(inputdata[j], target[j]);
+                }
             }
         }
 
@@ -148,32 +187,34 @@ public class Main extends GeneticAlgorithm{
 
         }
 
-        int ecount = 0;
-        int ucount = 0;
-        for(int j=0;j<testSize;j++){
-            double[] result = bp.computeOut(testInputData[j]);
-            ArrayList<People> tempData = data.getDataset();
+        for(BPDeep bp : main.bpList) {
+            int ecount = 0;
+            int ucount = 0;
+            for (int j = 0; j < testSize; j++) {
+                double[] result = bp.computeOut(testInputData[j]);
+                ArrayList<People> tempData = data.getDataset();
 
-            int index1 = j/data.getDataset().size();
-            int index2 = j - index1*data.getDataset().size();
-            People p1 = tempData.get(index1);
-            People p2 = tempData.get(index2);
-            String s1 = p1.getRec_id();
-            String s2 = p2.getRec_id();
-            String[] array1 = s1.split("-");
-            String[] array2 = s2.split("-");
-            if(array1[1].equals(array2[1])) {
-                String OK = (result[0] > THRESHOLD)?("OK"):("!!!");
-                if(OK.equals("!!!")) {
-                    System.out.println("[相等]"+OK+"   "+Arrays.toString(result) + "   "+Arrays.toString(testInputData[j]));
-                    ecount++;
+                int index1 = j / data.getDataset().size();
+                int index2 = j - index1 * data.getDataset().size();
+                People p1 = tempData.get(index1);
+                People p2 = tempData.get(index2);
+                String s1 = p1.getRec_id();
+                String s2 = p2.getRec_id();
+                String[] array1 = s1.split("-");
+                String[] array2 = s2.split("-");
+                if (array1[1].equals(array2[1])) {
+                    String OK = (result[0] > THRESHOLD) ? ("OK") : ("!!!");
+                    if (OK.equals("!!!")) {
+                        System.out.println("[相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                        ecount++;
 
-                }
-            } else {
-                String OK = (result[0] < 1-THRESHOLD)?("OK"):("!!!");
-                if(OK.equals("!!!")) {
-                    System.out.println("[不相等]"+OK+"   "+Arrays.toString(result) + "   "+Arrays.toString(testInputData[j]));
-                    ucount++;
+                    }
+                } else {
+                    String OK = (result[0] < 1 - THRESHOLD) ? ("OK") : ("!!!");
+                    if (OK.equals("!!!")) {
+                        System.out.println("[不相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                        ucount++;
+                    }
                 }
             }
         }
@@ -184,12 +225,18 @@ public class Main extends GeneticAlgorithm{
     @Override
     public double caculateY(Chromosome x) {
         // TODO Auto-generated method stub
+        int index = this.population.indexOf(x);
+        HashMap<Double, Double> map = this.expectedAndActual.get(index);
         double E = 0.0;
-        for(double key : expectedAndActual.keySet()) {
-            double value = expectedAndActual.get(key);
+
+        for(double key : map.keySet()) {
+            double value = map.get(key);
             E += (key - value)*(key - value);
         }
-        return 1.0/(1.0 + E);
+        double score = 1.0/(1.0 + E);
+//        x.setScore(score);//给染色体x设置适应度值expectedAndActual
+
+        return score;
     }
 
 }

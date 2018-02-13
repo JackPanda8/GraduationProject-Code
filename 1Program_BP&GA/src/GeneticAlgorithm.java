@@ -229,7 +229,7 @@ public abstract class GeneticAlgorithm {
 
 
     /**
-     * @param x
+     * @param x 染色体
      * @return
      * @Description: 适应度函数：根据X计算Y值 Y=F(X)
      */

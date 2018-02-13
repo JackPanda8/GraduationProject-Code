@@ -1,6 +1,8 @@
 import java.util.*;
 
 public class BPDeep{
+
+    public int[] layernum;//各层节点数数组
     public double[][] layer;//神经网络各层节点
     public double[][] layerErr;//神经网络各节点误差
     public double[][][] layer_weight;//各层节点权重
@@ -10,6 +12,7 @@ public class BPDeep{
 
 
     public BPDeep(int[] layernum, double rate, double mobp){
+        this.layernum = layernum;
         this.mobp = mobp;
         this.rate = rate;
         layer = new double[layernum.length][];
