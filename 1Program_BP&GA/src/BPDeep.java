@@ -32,6 +32,43 @@ public class BPDeep{
             }
         }
     }
+
+    public BPDeep(int[] layernum, double rate, double mobp, Chromosome chromosome, int layerInputNum, int layerHiddenNum){
+        this.layernum = layernum;
+        this.mobp = mobp;
+        this.rate = rate;
+        layer = new double[layernum.length][];
+        layerErr = new double[layernum.length][];
+        layer_weight = new double[layernum.length][][];
+        layer_weight_delta = new double[layernum.length][][];
+        float[] gene = chromosome.getGene();
+        for(int l=0;l<layernum.length;l++){
+            layer[l]=new double[layernum[l]];
+            layerErr[l]=new double[layernum[l]];
+            if(l+1<layernum.length){
+                layer_weight[l]=new double[layernum[l]+1][layernum[l+1]];
+                layer_weight_delta[l]=new double[layernum[l]+1][layernum[l+1]];
+            }
+        }
+
+        //由gene[]数组得到一个BPDeep网络
+        int index = 0;
+        //得到输入层与隐含层之间的边的权值
+        for(int i = 0; i < layerInputNum+1; i++) {
+            for(int j = 0; j < layerHiddenNum; j++) {
+                this.layer_weight[0][i][j] = gene[index];
+                index++;
+            }
+        }
+        //得到隐含层与输出层之间的边的权值
+        for(int i = 0; i < layerHiddenNum+1; i++) {
+            for(int j = 0; j < 1; j++) {
+                layer_weight[1][i][j] = gene[index];
+                index++;
+            }
+        }
+    }
+
     //逐层向前计算输出
     public double[] computeOut(double[] in){
         for(int l=1;l<layer.length;l++){

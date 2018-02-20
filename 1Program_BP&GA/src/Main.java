@@ -1,23 +1,31 @@
 import java.util.*;
 
 public class Main extends GeneticAlgorithm{
-    private static final float PORTION = 0.3f;
-    private static final int TRAINING_NUMBER = 3000;//神经网络的训练次数
+    private static final float PORTION = 0.3f;//神经网络的训练数据集占总数据集的比例
+    private static final int TRAINING_NUMBER = 100;//神经网络的训练次数
+    private static final double LEARNING_RATE = 0.15;//学习系数
+    private static final double MOBP = 0.8;//动量系数
     private static final float THRESHOLD = 0.8f;//神经网络的输出层阈值
 
-    private static final int POPULATION_SIZE = 20;//种群数量设置
+    private static final int POPULATION_SIZE = 3;//种群数量设置
+    private static final int MAX_ITER_NUM = 100;//最大迭代次数
+    private static final double MUTATION_RATE = 0.01;//变异概率
+    private static final double MUTATION_MAX_SCALE = 0.3;//最大变异率
+    private static final double MUTATION_MINSCALE = 0.6;//最小变异率
+    private static final double CROSSOVER_RATE = 0.6;//交叉概率
+    private static final double CROSSOVER_MAX_SCALE = 0.3;//最大交叉率
+    private static final double CROSSOVER_MIN_SCALE = 0.01;//最小交叉率
 
     private ArrayList<BPDeep> bpList;//神经网络组成的种群
     private ArrayList<Chromosome> population;//种群
+    public static int geneSize;//染色体中基因的长度
     private ArrayList<HashMap<Double, Double>> expectedAndActual;//种群中染色体对应的期望输出与实际输出，key：期望输出 value：实际输出
 
     public Main() {
-        super(10000, 100, 500, 0.01, 0.3, 0.01, 0.6, 0.3, 0.01);
+        super(geneSize, POPULATION_SIZE, MAX_ITER_NUM, MUTATION_RATE, MUTATION_MAX_SCALE, MUTATION_MINSCALE, CROSSOVER_RATE, CROSSOVER_MAX_SCALE, CROSSOVER_MIN_SCALE);
     }
 
     public static void main(String[] args) {
-        Main main = new Main();
-
         //读数据
         Data data = new Data();
         try {
@@ -41,7 +49,6 @@ public class Main extends GeneticAlgorithm{
                 inputdata[i][j] = trainInput[i].getAttributeByIndex(j);
             }
         }
-
         double[] trainTarget = data.getTrainTarget();
         int targetSize = trainTarget.length;
         double[][] target = new double[targetSize][2];
@@ -56,18 +63,18 @@ public class Main extends GeneticAlgorithm{
             }
         }
 
+        Main.geneSize = (inputLayerNumber+1)*hiddenLayerNumber + hiddenLayerNumber+1 + 1;
+        Main main = new Main();
+
         //初始化神经网络的基本配置
         //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示
-        // 输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
-        //第二个参数是学习步长，第三个参数是动量系数
-
-
+        // 输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点, 第二个参数是学习步长，第三个参数是动量系数
 
 
         //【1】随机初始化POPULATION_SIZE个BP网络；并进行迭代训练
         main.bpList = new ArrayList<BPDeep>(POPULATION_SIZE);
         for(int i = 0; i < POPULATION_SIZE; i++) {
-            BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, 0.15, 0.8);
+            BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP);
             for (int n = 0; n < TRAINING_NUMBER; n++) {
                 for (int j = 0; j < inputSize; j++) {
                     bp.train(inputdata[j], target[j]);
@@ -88,14 +95,14 @@ public class Main extends GeneticAlgorithm{
              geneNumber = layerInputNum*(layerHiddenNum - 1) + layerHiddenNum*1 + 1;
              ArrayList<Float> temp = new ArrayList<Float>();
              //得到输入层与隐含层之间的边的权值
-             for(int i = 0; i < layerInputNum+1; i++) {
-                 for(int j = 0; j < layerHiddenNum; j++) {
+             for(int i = 0; i < layerInputNum; i++) {
+                 for(int j = 0; j < layerHiddenNum-1; j++) {
                      float weight = (float)bpDeep.layer_weight[0][i][j];
                      temp.add(weight);
                  }
              }
             //得到隐含层与输出层之间的边的权值
-            for(int i = 0; i < layerHiddenNum+1; i++) {
+            for(int i = 0; i < layerHiddenNum; i++) {
                 for(int j = 0; j < 1; j++) {
                     float weight = (float)bpDeep.layer_weight[1][i][j];
                     temp.add(weight);
@@ -142,16 +149,16 @@ public class Main extends GeneticAlgorithm{
                 }
             }
         }
-        //使用GA进行种群的调整，跳出局部最优
+        //使用GA进行种群的调整，跳出局部最优,最后一代种群中的最优值即为最大值
         main.caculate(main.population);
-
+        Chromosome bestChromosome = main.getX();
+        BPDeep bestBP = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP, bestChromosome, inputLayerNumber, hiddenLayerNumber);
 
         //【3】再次对BP神经网络进行迭代训练
         for(int i = 0; i < POPULATION_SIZE; i++) {
-            BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, 0.15, 0.8);
             for (int n = 0; n < TRAINING_NUMBER; n++) {
                 for (int j = 0; j < inputSize; j++) {
-                    bp.train(inputdata[j], target[j]);
+                    bestBP.train(inputdata[j], target[j]);
                 }
             }
         }
@@ -187,37 +194,38 @@ public class Main extends GeneticAlgorithm{
 
         }
 
-        for(BPDeep bp : main.bpList) {
-            int ecount = 0;
-            int ucount = 0;
-            for (int j = 0; j < testSize; j++) {
-                double[] result = bp.computeOut(testInputData[j]);
-                ArrayList<People> tempData = data.getDataset();
+        int ecount = 0;
+        int ucount = 0;
+        for (int j = 0; j < testSize; j++) {
+            double[] result = bestBP.computeOut(testInputData[j]);
+            ArrayList<People> tempData = data.getDataset();
 
-                int index1 = j / data.getDataset().size();
-                int index2 = j - index1 * data.getDataset().size();
-                People p1 = tempData.get(index1);
-                People p2 = tempData.get(index2);
-                String s1 = p1.getRec_id();
-                String s2 = p2.getRec_id();
-                String[] array1 = s1.split("-");
-                String[] array2 = s2.split("-");
-                if (array1[1].equals(array2[1])) {
-                    String OK = (result[0] > THRESHOLD) ? ("OK") : ("!!!");
-                    if (OK.equals("!!!")) {
-                        System.out.println("[相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
-                        ecount++;
+            int index1 = j / data.getDataset().size();
+            int index2 = j - index1 * data.getDataset().size();
+            People p1 = tempData.get(index1);
+            People p2 = tempData.get(index2);
+            String s1 = p1.getRec_id();
+            String s2 = p2.getRec_id();
+            String[] array1 = s1.split("-");
+            String[] array2 = s2.split("-");
+            if (array1[1].equals(array2[1])) {
+                String OK = (result[0] > THRESHOLD) ? ("OK") : ("!!!");
+//                System.out.println("[相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                if (OK.equals("!!!")) {
+                    System.out.println("[相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                    ecount++;
 
-                    }
-                } else {
-                    String OK = (result[0] < 1 - THRESHOLD) ? ("OK") : ("!!!");
-                    if (OK.equals("!!!")) {
-                        System.out.println("[不相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
-                        ucount++;
-                    }
+                }
+            } else {
+                String OK = (result[0] < 1 - THRESHOLD) ? ("OK") : ("!!!");
+//                System.out.println("[不相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                if (OK.equals("!!!")) {
+                    System.out.println("[不相等]" + OK + "   " + Arrays.toString(result) + "   " + Arrays.toString(testInputData[j]));
+                    ucount++;
                 }
             }
         }
+
 
     }
 

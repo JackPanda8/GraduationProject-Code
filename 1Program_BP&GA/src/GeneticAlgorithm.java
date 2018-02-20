@@ -20,8 +20,8 @@ public abstract class GeneticAlgorithm {
     private double totalScore;//总得分
     private double averageScore;//平均得分
 
-    private Chromosome x; //记录历史种群中最好的X值
-    private double y; //记录历史种群中最好的Y值
+    private Chromosome x; //记录种群中每一代最好的X值
+    private double y; //记录种群每一代中最好的适应度值
     private int geneI;//x y所在代数
 
     public GeneticAlgorithm(){}
@@ -51,9 +51,14 @@ public abstract class GeneticAlgorithm {
         while (generation < maxIterNum) {
             //种群遗传
             evolve();
-            print();
+            //print();
+            //【问题】知道前面所有带中的最值，也就是程序中的X  Y值，为什么不能用X Y值做遗传算法最后的结果值呢？
+            // 【解答】在最后一代的前面所有代计算的X、Y值并不能排除是局部最优解，而遗传算法设置了基因突变概率参数就是要跳出局部最优，最终稳定的输出Y值才有可能是全局最优（只是最有可能）。
+            // 在你实现的例子中求Y(x)函数最大值并没有一个确切判断最大值的指标，因此你选择种群杂交足够的代数。
             generation++;
         }
+
+        print();
     }
 
     /**
@@ -66,7 +71,7 @@ public abstract class GeneticAlgorithm {
         System.out.println("the worst fitness is:" + worstScore);
         System.out.println("the average fitness is:" + averageScore);
         System.out.println("the total fitness is:" + totalScore);
-        System.out.println("geneI:" + geneI + "\tx:" + x + "\ty:" + y);
+        System.out.println("当前是第【"+geneI+"】代，最好的适应度值对应的染色体x在种群中的序号为:\t" + this.population.indexOf(x) + "\t其适应度值y:" + y);
     }
 
 
@@ -133,10 +138,10 @@ public abstract class GeneticAlgorithm {
         totalScore = 0;
         for (Chromosome chro : population) {
             setChromosomeScore(chro);
-            if (chro.getScore() > bestScore) { //设置最好基因值
+            if (chro.getScore() >= bestScore) { //设置最好基因值
                 bestScore = chro.getScore();
                 if (y < bestScore) {
-                    x = chro;
+                    this.x = chro;
                     y = bestScore;
                     geneI = generation;
                 }
