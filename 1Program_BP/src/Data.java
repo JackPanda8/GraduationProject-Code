@@ -9,8 +9,8 @@ import java.util.*;
  */
 public class Data {
     //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5-4-3-1-1-uniform-all-0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5000-1000-5-2-2-uniform-all-0.csv";
 
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";

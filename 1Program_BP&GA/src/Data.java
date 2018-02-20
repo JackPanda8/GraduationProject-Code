@@ -27,7 +27,6 @@ public class Data {
 
     private FieldVector[] input;
     private double[] target;
-
     private FieldVector[] trainInput;
     private double[] trainTarget;
 
@@ -59,6 +58,14 @@ public class Data {
     }
 
 
+    //获取数据集中的真实的重复记录的数据，根据数据集的名字
+//    public int getActualDupNumber() {
+//        String datasetName = DATA_SET;
+//        String[] array = datasetName.split("-");
+//        String stringValue = array[2];
+//        int result = Integer.valueOf(stringValue);
+//        return result;
+//    }
 
 
     private void getData() throws IOException {

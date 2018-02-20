@@ -3,7 +3,7 @@ import java.util.*;
 public class Main {
 
     private static final float PORTION = 0.3f;
-    private static final int TRAINING_NUMBER = 3000;
+    private static final int TRAINING_NUMBER = 100;
     private static final float THRESHOLD = 0.8f;
 
     public static void main(String[] args) {
@@ -91,6 +91,12 @@ public class Main {
 
         }
 
+        //衡量算法的查全率和查准率以及误识别率
+        int actualTotalDup = 0;//实际的重复数
+        int totalDup = 0;//算法的总识别数
+        int trueDup = 0;//算法的正确识别数目
+        int falseDup = 0;//算法的错误识别数
+
         for(int j=0;j<testSize;j++){
             double[] result = bp.computeOut(testInputData[j]);
             ArrayList<People> tempData = data.getDataset();
@@ -108,21 +114,30 @@ public class Main {
                 if(OK.equals("!!!")) {
                     System.out.println("[相等]"+OK+"   "+Arrays.toString(result) + "   "+Arrays.toString(testInputData[j]));
                     ecount++;
-
+                } else {
+                    trueDup++;
                 }
+
+                actualTotalDup++;
             } else {
                 String OK = (result[0] < 1-THRESHOLD)?("OK"):("!!!");
                 if(OK.equals("!!!")) {
                     System.out.println("[不相等]"+OK+"   "+Arrays.toString(result) + "   "+Arrays.toString(testInputData[j]));
                     ucount++;
-
+                    falseDup++;
                 }
             }
 
-
         }
 
-        System.out.println();
+        totalDup = trueDup + falseDup;
+
+        double chaquanlv = ((double)trueDup)/((double)actualTotalDup) * 100.0;
+        double chazhunlv = ((double)trueDup)/((double)totalDup) * 100.0;
+        double wushibielv = ((double)falseDup)/((double)totalDup) * 100.0;
+
+        System.out.println("BP算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
+
 
     }
 
