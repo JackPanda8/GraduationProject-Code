@@ -6,19 +6,20 @@ enum Comparation {
 }
 
 public class Main {
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
-    //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
+
+
 
 
 
     public static final int WINDOW_SIZE = 5;//滑动窗口的大小
-    public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
+    public static final double VERY_CLOSE_CONSTANT = 0.80;//暂时定义very_close的衡量尺度为相似度>=0.8
     public static final double CLOSE_CONSTANT = 0.6;//暂时定义close的衡量尺度为相似度>=0.6,所以0.6~0.8即为close_but_not_much的范围
 
     private ArrayList<People> dataset;
@@ -156,10 +157,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -263,10 +264,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -304,10 +305,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -359,10 +360,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -400,10 +401,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -455,10 +456,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -496,10 +497,10 @@ public class Main {
                         this.duplicateTuples.add(this.dataset.get(indexI));
                         this.duplicateTuples.add(this.dataset.get(indexTail));
 
-                        if(!this.duplicateList.get(indexTail).contains(indexI)) {
+                        if(!this.duplicateList.get(indexTail).contains(indexI) && indexI != indexTail) {
                             this.duplicateList.get(indexTail).add(indexI);
                         }
-                        if(!this.duplicateList.get(indexI).contains(indexTail)) {
+                        if(!this.duplicateList.get(indexI).contains(indexTail) && indexI != indexTail) {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
@@ -530,6 +531,37 @@ public class Main {
             }
             tail++;
         }
+    }
+
+    //采用基于权值的判等方法
+    private boolean judgeEqual1(People p1, People p2) {
+        //获取两条数据的区分度最高字段的内容
+        int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+        int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
+        int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
+        int keyindex3 = this.fields.indexOf(this.sortedFieldsByDifference.get(3));
+        int keyindex4 = this.fields.indexOf(this.sortedFieldsByDifference.get(4));
+        String s10 = p1.getAttributeByIndex(keyindex0);
+        String s11 = p1.getAttributeByIndex(keyindex1);
+        String s12 = p1.getAttributeByIndex(keyindex2);
+        String s13 = p1.getAttributeByIndex(keyindex3);
+        String s14 = p1.getAttributeByIndex(keyindex4);
+        String s20 = p2.getAttributeByIndex(keyindex0);
+        String s21 = p2.getAttributeByIndex(keyindex1);
+        String s22 = p2.getAttributeByIndex(keyindex2);
+        String s23 = p2.getAttributeByIndex(keyindex3);
+        String s24 = p2.getAttributeByIndex(keyindex4);
+
+
+        if(calculateSimilarDegree(s10, s20) >= VERY_CLOSE_CONSTANT
+                && calculateSimilarDegree(s11, s21) >= VERY_CLOSE_CONSTANT
+                && calculateSimilarDegree(s12, s22) >= CLOSE_CONSTANT
+                && calculateSimilarDegree(s13, s23) >= CLOSE_CONSTANT
+                && calculateSimilarDegree(s14, s24) >= CLOSE_CONSTANT) {
+            return true;
+        }
+
+        return false;
     }
 
     //对两个record进行比较判断是否可以归并,原论文使用的是OPS5产生式系统（Production System）
@@ -985,9 +1017,9 @@ public class Main {
     private void generateKey1() {
         for(People people : this.dataset) {
             StringBuilder sortKey = new StringBuilder();
-            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
-            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
-            int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
+            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
+            int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(3));
             String s0 = people.getAttributeByIndex(keyindex0);
             if(s0 == null) {
                 this.indexOfTuplesWithIncompleteSortKey.add(this.mapOfDatasetAfterSort.get(people));
@@ -1016,8 +1048,8 @@ public class Main {
     private void generateKey2() {
         for(People people : this.dataset) {
             StringBuilder sortKey = new StringBuilder();
-            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
-            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(0));
+            int keyindex0 = this.fields.indexOf(this.sortedFieldsByDifference.get(1));
+            int keyindex1 = this.fields.indexOf(this.sortedFieldsByDifference.get(2));
             int keyindex2 = this.fields.indexOf(this.sortedFieldsByDifference.get(3));
             String s0 = people.getAttributeByIndex(keyindex0);
             if(s0 == null) {
