@@ -6,16 +6,22 @@ enum Comparation {
 }
 
 public class Main {
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5-4-3-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5000-1000-5-2-2-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
 
 
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-20000-1000-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-50000-1000-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
+
+
+
+
+
+
 
     public static final int WINDOW_SIZE = 5;//滑动窗口的大小
     public static final double VERY_CLOSE_CONSTANT = 0.8;//暂时定义very_close的衡量尺度为相似度>=0.8
@@ -32,11 +38,11 @@ public class Main {
     private int actualTotalDup;//实际总重复数
     private int trueDup;//算法中正确重复
     private int[] flagForCountTrueDup;//为统计正确重复设立的flag数组
-    private int falseDup;//算法中错误重复
+    private int falseDup;//算法中错误重复o
 
     public static void main(String[] args) throws IOException{
         String datasetName = Main.DATA_SET;
-        String[] array = datasetName.split("-");
+        String[] array = datasetName.split("_");
         String stringValue = array[2];
 
         Main main = new Main();
@@ -91,7 +97,7 @@ public class Main {
         double chazhunlv = ((double)this.trueDup)/((double)this.totalDup) * 100.0;
         double wushibielv = ((double)this.falseDup)/((double)this.totalDup) * 100.0;
 
-        System.out.println("MPN算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
+        System.out.println("SNM算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
     }
 
 

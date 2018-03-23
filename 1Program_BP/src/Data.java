@@ -8,15 +8,13 @@ import java.util.*;
  * Created by Administrator on 2018/1/27.
  */
 public class Data {
-    //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5-4-3-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-100-5-2-2-uniform-all-0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-500-500-1-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-5000-1000-5-2-2-uniform-all-0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
+    // public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
 
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-10000-5000-1-1-1-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-20000-1000-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-50000-1000-5-2-2-uniform-all-0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset-100000-5000-1-1-1-uniform-all-0.csv";
 
 
 

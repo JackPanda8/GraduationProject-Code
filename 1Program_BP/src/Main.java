@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Main {
 
-    private static final float PORTION = 0.3f;
+    private static final float PORTION = 0.01f;
     private static final int TRAINING_NUMBER = 100;
     private static final float THRESHOLD = 0.8f;
 
