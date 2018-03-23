@@ -9,10 +9,10 @@ public class Main {
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
 
     public static final int SLIDEWINDOW_SIZE = 5;//滑动窗口的大小
@@ -94,11 +94,20 @@ public class Main {
                     for(int e : list) {
                         flagArray[e] = 1;
                         totalDupNumber++;
+
+                        String s1 = this.dataset.get(i).getRec_id();
+                        String s2 = this.dataset.get(e).getRec_id();
+                        String[] array1 = s1.split("-");
+                        String[] array2 = s2.split("-");
+                        if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                            this.trueDup++;
+                        }
                     }
                 }
             }
 
         }
+
 
         this.totalDup = totalDupNumber;
         this.falseDup = this.totalDup - this.trueDup;
@@ -201,13 +210,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
@@ -242,13 +251,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
@@ -296,13 +305,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
@@ -339,13 +348,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
@@ -394,13 +403,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
@@ -434,13 +443,13 @@ public class Main {
                             if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
                                 if(this.flagForCountTrueDup[indexI] == 0) {
                                     if(array1[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexI] = 1;
                                 }
                                 if(this.flagForCountTrueDup[indexTail] == 0) {
                                     if(array2[2].equals("dup")) {
-                                        this.trueDup++;
+//                                        this.trueDup++;
                                     }
                                     this.flagForCountTrueDup[indexTail] = 1;
                                 }
