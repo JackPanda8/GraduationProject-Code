@@ -35,6 +35,10 @@ public class Main {
     private int falseDup;//算法中错误重复
 
     public static void main(String[] args) throws IOException{
+        //计算程序运行时间
+        long startTime=System.currentTimeMillis();   //获取开始时间
+
+
         String datasetName = Main.DATA_SET;
         String[] array = datasetName.split("_");
         String stringValue = array[2];
@@ -73,6 +77,8 @@ public class Main {
 
         main.evaluation();
 
+        long endTime=System.currentTimeMillis(); //获取结束时间
+        System.out.println("MPN运行时间： "+(endTime-startTime)/1000.0+"s");
     }
 
 
