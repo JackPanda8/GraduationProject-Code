@@ -6,12 +6,12 @@ enum Comparation {
 }
 
 public class Main {
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
-//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
 
@@ -20,6 +20,8 @@ public class Main {
 
 
     public static final int WINDOW_SIZE = 5;//滑动窗口的大小
+    public static final int WINDOW_MAX_SIZE = 20;//滑动窗口的最大值
+    public static final int WINDOW_MIN_SIZE = 3;//滑动窗口的最小值
     public static final double VERY_CLOSE_CONSTANT = 0.80;//暂时定义very_close的衡量尺度为相似度>=0.8
     public static final double CLOSE_CONSTANT = 0.6;//暂时定义close的衡量尺度为相似度>=0.6,所以0.6~0.8即为close_but_not_much的范围
 
@@ -39,10 +41,13 @@ public class Main {
     private int totalDup;//算法检查出的总重复
     private int actualTotalDup;//实际总重复数
     private int trueDup;//算法中正确重复
-    private int[] flagForCountTrueDup;//为统计正确重复设立的flag数组
+//    private int[] flagForCountTrueDup;//为统计正确重复设立的flag数组
     private int falseDup;//算法中错误重复
 
     public static void main(String[] args) throws IOException{
+        //计算程序运行时间
+        long startTime=System.currentTimeMillis();   //获取开始时间
+
         String datasetName = Main.DATA_SET;
         String[] array = datasetName.split("_");
         String stringValue = array[2];
@@ -53,10 +58,7 @@ public class Main {
         main.falseDup = 0;
         main.getData();
         int size = main.dataset.size();
-        main.flagForCountTrueDup = new int[size];
-        for(int i = 0; i < size; i++) {
-            main.flagForCountTrueDup[i] = 0;
-        }
+
         main.sortByDiff();
         main.formSet();//将people与duplicateList建立1对1的映射，以便计算传递闭包用
 
@@ -90,6 +92,8 @@ public class Main {
 
         main.evaluation();
 
+        long endTime=System.currentTimeMillis(); //获取结束时间
+        System.out.println("改进算法运行时间： "+(endTime-startTime)/1000.0+"s");
     }
 
 
@@ -165,28 +169,6 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[index] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[index] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
 
                     }
                 }
@@ -234,12 +216,14 @@ public class Main {
 
 
 
-
+    //【改进点3：动态滑动窗口】
     //[4.1]滑动窗口归并,w是滑动窗口的大小
     private void slideWindowProcess(int w) {
         if(w > this.datasetAfterSort.size()) {
             System.out.println("Error：滑动窗口的大小" + w + "超过了数据集的大小" + this.datasetAfterSort.size());
         }
+
+
 
         int size = this.datasetAfterSort.size();
 //        this.duplicateMatrix = new int[size][size];
@@ -272,30 +256,22 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = 0; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort.get(j), this.datasetAfterSort.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator)/(denominator));
+                }
+                System.out.println("1窗口内过程，下一次w大小为:"+w);
+
             } else {
                 for(int i = tail-w+1; i < tail; i++) {
                     People tempPeople = this.datasetAfterSort.get(i);
@@ -313,31 +289,25 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = tail-w+1; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort.get(j), this.datasetAfterSort.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator/denominator));
+                }
+                System.out.println("1普通过程，下一次w大小为:"+w);
+
             }
+
+
             tail++;
         }
     }
@@ -368,30 +338,22 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = 0; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort1.get(j), this.datasetAfterSort1.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator/denominator));
+                }
+                System.out.println("2窗口内过程，下一次w大小为:"+w);
+
             } else {
                 for(int i = tail-w+1; i < tail; i++) {
                     People tempPeople = this.datasetAfterSort1.get(i);
@@ -409,30 +371,22 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = tail-w+1; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort1.get(j), this.datasetAfterSort1.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator/denominator));
+                }
+                System.out.println("2普通过程，下一次w大小为:"+w);
+
             }
             tail++;
         }
@@ -464,30 +418,25 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
+
 
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = 0; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort2.get(j), this.datasetAfterSort2.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator/denominator));
+                }
+                System.out.println("3窗口内过程，下一次w大小为:"+w);
+
+
             } else {
                 for(int i = tail-w+1; i < tail; i++) {
                     People tempPeople = this.datasetAfterSort2.get(i);
@@ -505,30 +454,23 @@ public class Main {
                             this.duplicateList.get(indexI).add(indexTail);
                         }
 
-                        if(!(this.flagForCountTrueDup[indexI] == 1 && this.flagForCountTrueDup[indexTail] == 1)) {
-                            //统计正确重复数目
-                            String s1 = this.dataset.get(indexI).getRec_id();
-                            String s2 = this.dataset.get(indexTail).getRec_id();
-                            String[] array1 = s1.split("-");
-                            String[] array2 = s2.split("-");
-                            if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
-                                if(this.flagForCountTrueDup[indexI] == 0) {
-                                    if(array1[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexI] = 1;
-                                }
-                                if(this.flagForCountTrueDup[indexTail] == 0) {
-                                    if(array2[2].equals("dup")) {
-//                                        this.trueDup++;
-                                    }
-                                    this.flagForCountTrueDup[indexTail] = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
+
+                //更改下一次滑动窗口的大小
+                double denominator = 0;
+                double numerator = 0;
+                for(int j = tail-w+1; j < tail; j++) {
+                    denominator+=Math.abs(j-tail);
+                    boolean equal = judgeEqual(this.datasetAfterSort2.get(j), this.datasetAfterSort2.get(tail));
+                    numerator+=Math.abs(j-tail)*((equal)?(1):(0));
+                }
+                if(denominator!=0) {
+                    w= (int) (WINDOW_MIN_SIZE+(WINDOW_MAX_SIZE- WINDOW_MIN_SIZE)*(numerator/denominator));
+                }
+                System.out.println("3普通过程，下一次w大小为:"+w);
+
+
             }
             tail++;
         }
