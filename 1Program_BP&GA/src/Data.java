@@ -8,22 +8,6 @@ import java.util.*;
  * Created by Administrator on 2018/1/27.
  */
 public class Data {
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100w_20w_3_1_1_uniform_phonetic_0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\.csv";
-
-
-
-    private ArrayList<People> dataset;
-    private ArrayList<People> trainRecord;
-    private int fieldsNumber;
-    private int hiddenNumber;
-
-    private FieldVector[] input;
-    private double[] target;
-    private FieldVector[] trainInput;
-    private double[] trainTarget;
-
-
     public ArrayList<People> getTrainRecord() {
         return trainRecord;
     }
@@ -51,14 +35,36 @@ public class Data {
     }
 
 
+
+    //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100w_20w_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500000_100000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_200000_40000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
+
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
+
+
+
+    private ArrayList<People> dataset;
+    private ArrayList<People> trainRecord;
+    private int fieldsNumber;
+    private int hiddenNumber;
+
+    private FieldVector[] input;
+    private double[] target;
+    private FieldVector[] trainInput;
+    private double[] trainTarget;
+
+
     //获取数据集中的真实的重复记录的数据，根据数据集的名字
-//    public int getActualDupNumber() {
-//        String datasetName = DATA_SET;
-//        String[] array = datasetName.split("-");
-//        String stringValue = array[2];
-//        int result = Integer.valueOf(stringValue);
-//        return result;
-//    }
+    public int getActualDupNumber() {
+        String datasetName = DATA_SET;
+        String[] array = datasetName.split("-");
+        String stringValue = array[2];
+        int result = Integer.valueOf(stringValue);
+        return result;
+    }
 
 
     private void getData() throws IOException {
@@ -131,8 +137,8 @@ public class Data {
         getData();
         generateTrainDataset(proportion);
         int size = this.trainRecord.size();
-        this.trainInput = new FieldVector[size*size];
         this.trainTarget = new double[size*size];
+        this.trainInput = new FieldVector[size*size];
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
