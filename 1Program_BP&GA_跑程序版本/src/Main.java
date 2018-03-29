@@ -2,6 +2,7 @@ import java.util.*;
 
 public class Main extends GeneticAlgorithm{
     private static final String FILEPATH = "D:\\毕业设计\\1程序\\TrainedBPNetwork\\";
+    private static final String FILENAME = "dataCount500portion0.3trainingNumber100learningRate0.15populationSize3maxIterNum100.txt";
 
     private static final float PORTION = 0.1f;//神经网络的训练数据集占总数据集的比例
     private static final int TRAINING_NUMBER = 500;//神经网络的训练次数
@@ -32,158 +33,20 @@ public class Main extends GeneticAlgorithm{
         //读数据
         Data data = new Data();
         try {
-            data.getTrainData(PORTION);
+            data.getData();
         } catch (Exception e) {
             e.printStackTrace();
         }
         int inputLayerNumber = data.getFieldsNumber();
         int hiddenLayerNumber = data.getHiddenNumber();
-        int recordsNumber = data.getTrainRecord().size();
-
-        //设置样本数据，对应上面的4个二维坐标数据
-//        double[][] data = new double[][]{{1,2},{2,2},{1,1},{2,1}};
-        //设置目标数据，对应4个坐标数据的分类
-//        double[][] target = new double[][]{{1,0},{0,1},{0,1},{1,0}};
-        FieldVector[] trainInput = data.getTrainInput();
-        int inputSize = trainInput.length;
-        double[][] inputdata = new double[inputSize][inputLayerNumber];
-        for (int i = 0; i < inputSize; i++) {
-            for (int j = 0; j < inputLayerNumber; j++) {
-                inputdata[i][j] = trainInput[i].getAttributeByIndex(j);
-            }
-        }
-        double[] trainTarget = data.getTrainTarget();
-        int targetSize = trainTarget.length;
-        double[][] target = new double[targetSize][2];
-        for (int i = 0; i < targetSize; i++) {
-            //（1,0）代表相似，（0,1）代表不相似
-            if (trainTarget[i] == 1.0) {
-                target[i][0] = 1.0;
-                target[i][1] = 0.0;
-            } else {
-                target[i][0] = 0.0;
-                target[i][1] = 1.0;
-            }
-        }
 
         Main.geneSize = (inputLayerNumber+1)*hiddenLayerNumber + hiddenLayerNumber+1 + 1;
         Main main = new Main();
 
-        //初始化神经网络的基本配置
-        //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示
-        // 输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点, 第二个参数是学习步长，第三个参数是动量系数
-
-
-        //【1】随机初始化POPULATION_SIZE个BP网络；并进行迭代训练
-        main.bpList = new ArrayList<BPDeep>(POPULATION_SIZE);
-        for(int i = 0; i < POPULATION_SIZE; i++) {
-            BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP);
-            for (int n = 0; n < TRAINING_NUMBER; n++) {
-                for (int j = 0; j < inputSize; j++) {
-                    bp.train(inputdata[j], target[j]);
-                }
-            }
-
-            main.bpList.add(bp);
-        }
-
-        //由bpList初始化种群
-        main.population = new ArrayList<Chromosome>(POPULATION_SIZE);
-        for(BPDeep bpDeep : main.bpList) {
-             int geneNumber = 0;
-             int layerInputNum = bpDeep.layernum[0] + 1;
-             int layerHiddenNum = bpDeep.layernum[1] + 1;
-             int layerOutputNum = 1;
-            // 由输入层和隐含层连接权值、隐含层阈值、隐含层与输出层连接权值以及输出层阈值4个部分组成。【实际上我的程序只有三个部分】
-             geneNumber = layerInputNum*(layerHiddenNum - 1) + layerHiddenNum*1 + 1;
-             ArrayList<Float> temp = new ArrayList<Float>();
-             //得到输入层与隐含层之间的边的权值
-             for(int i = 0; i < layerInputNum; i++) {
-                 for(int j = 0; j < layerHiddenNum-1; j++) {
-                     float weight = (float)bpDeep.layer_weight[0][i][j];
-                     temp.add(weight);
-                 }
-             }
-            //得到隐含层与输出层之间的边的权值
-            for(int i = 0; i < layerHiddenNum; i++) {
-                for(int j = 0; j < 1; j++) {
-                    float weight = (float)bpDeep.layer_weight[1][i][j];
-                    temp.add(weight);
-                }
-            }
-            temp.add(THRESHOLD);
-            //得到染色体的基因数组
-            float[] gene = new float[geneNumber];
-            for(int i = 0; i < geneNumber; i++) {
-                gene[i] = temp.get(i);
-            }
-            //初始化染色体
-            Chromosome chromosome = new Chromosome(gene);
-            main.population.add(chromosome);
-
-        }
-
-
-        //【2】使用GA算法进行种群调整
-        main.expectedAndActual = new ArrayList<HashMap<Double, Double>>(POPULATION_SIZE);
-        for(BPDeep bpDeep : main.bpList) {
-            HashMap<Double, Double> map = new HashMap<Double, Double>();
-            for(int j=0;j<inputSize;j++){
-                double[] result = bpDeep.computeOut(inputdata[j]);
-                ArrayList<People> tempData = data.getDataset();
-
-                int index1 = j/data.getDataset().size();
-                int index2 = j - index1*data.getDataset().size();
-                People p1 = tempData.get(index1);
-                People p2 = tempData.get(index2);
-                String s1 = p1.getRec_id();
-                String s2 = p2.getRec_id();
-                String[] array1 = s1.split("-");
-                String[] array2 = s2.split("-");
-                //得到该染色体的实际输出和理论输出
-                if(array1[1].equals(array2[1])) {
-                    double actual = (result[0] > THRESHOLD)?(1.0):(0.0);
-                    map.put(1.0, actual);
-                    main.expectedAndActual.add(map);
-                } else {
-                    double actual = (result[0] < 1-THRESHOLD)?(0.0):(1.0);
-                    map.put(0.0, actual);
-                    main.expectedAndActual.add(map);
-                }
-            }
-        }
-        //使用GA进行种群的调整，跳出局部最优,最后一代种群中的最优值即为最大值
-        main.caculate(main.population);
-        Chromosome bestChromosome = main.getX();
-        float[] bestGene = bestChromosome.getGene();
-        float bestThreshold = bestGene[bestGene.length-1];
-        BPDeep bestBP = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP, bestChromosome, inputLayerNumber, hiddenLayerNumber);
-
-        //【3】再次对BP神经网络进行迭代训练
-        for(int i = 0; i < POPULATION_SIZE; i++) {
-            for (int n = 0; n < TRAINING_NUMBER; n++) {
-                for (int j = 0; j < inputSize; j++) {
-                    bestBP.train(inputdata[j], target[j]);
-                }
-            }
-        }
-
-
-        //【3.1】将表现最好的BP网络的权值和输出层阈值写入txt
-        String dataCount = String.valueOf(data.getDataCount());//数据集大小
-        String portion = String.valueOf(PORTION);//神经网络的训练数据集占总数据集的比例
-        String trainingNumber = String.valueOf(TRAINING_NUMBER);//神经网络的训练次数
-        String learningRate = String.valueOf(LEARNING_RATE);//学习系数
-        String populationSize = String.valueOf(POPULATION_SIZE);//种群数量设置
-        String maxIterNum = String.valueOf(MAX_ITER_NUM);//最大迭代次数
-        StringBuilder filename = new StringBuilder();
-        filename.append("dataCount"+dataCount).append("portion"+portion).append("trainingNumber"+trainingNumber).append("learningRate"+learningRate).append("populationSize"+populationSize).append("maxIterNum"+maxIterNum);
-        filename.append(".txt");
-        FileIO.writeTxtFile(FILEPATH, filename.toString(), bestChromosome);
-
 
         //【3.2】读BP从txt
-        Chromosome bestChroFromTXT = FileIO.readTxtFile(FILEPATH, filename.toString());
+//        Chromosome bestChroFromTXT = FileIO.readTxtFile(FILEPATH, filename.toString());
+        Chromosome bestChroFromTXT = FileIO.readTxtFile(FILEPATH,FILENAME);
         BPDeep bestBPFromTXT = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP, bestChroFromTXT, inputLayerNumber, hiddenLayerNumber);
         float bestThresholdFromTXT = bestChroFromTXT.getGene()[bestChroFromTXT.getGene().length-1];
 
@@ -227,8 +90,9 @@ public class Main extends GeneticAlgorithm{
                     double[][] tempIn = {{simi0, simi1, simi2, simi3, simi4, simi5, simi6, simi7, simi8, simi9, simi10, simi11, simi12, simi13, simi14, simi15, simi16}};
 //                    double[] tempResult = bestBP.computeOut(tempIn[0]);
                     double[] tempResult = bestBPFromTXT.computeOut(tempIn[0]);
-                    boolean isEqual = (tempResult[0] >= bestThreshold) ? (true) : (false);
+                    boolean isEqual = (tempResult[0] >= bestThresholdFromTXT) ? (true) : (false);
                     if(isEqual) {
+                        System.out.println("重复："+p1.getAttributeByIndex(0)+" || "+p2.getAttributeByIndex(0));
                         if(!main.duplicateList.get(i).contains(j)) {
                             main.duplicateList.get(i).add(j);
                         }
@@ -257,7 +121,6 @@ public class Main extends GeneticAlgorithm{
             if(list.isEmpty()) {
                 flagArray[i] = 1;
             } else {
-//                System.out.println("有重复");
                 if(flagArray[i] == 0) {
                     flagArray[i] = 1;
                     for(int e : list) {

@@ -77,7 +77,7 @@ public class Data {
     }
 
 
-    private void getData() throws IOException {
+    public void getData() throws IOException {
         this.dataset = new ArrayList<People>();
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(DATA_SET)));
