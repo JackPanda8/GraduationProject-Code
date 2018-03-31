@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class BPDeep{
+
     public int[] layernum;//各层节点数数组
     public double[][] layer;//神经网络各层节点
     public double[][] layerErr;//神经网络各节点误差
@@ -8,6 +9,7 @@ public class BPDeep{
     public double[][][] layer_weight_delta;//各层节点权重动量
     public double mobp;//动量系数
     public double rate;//学习系数
+
 
     public BPDeep(int[] layernum, double rate, double mobp){
         this.layernum = layernum;
@@ -31,7 +33,7 @@ public class BPDeep{
         }
     }
 
-    public BPDeep(int[] layernum, double rate, double mobp, int layerInputNum, int layerHiddenNum, float[] gene){
+    public BPDeep(int[] layernum, double rate, double mobp, Chromosome chromosome, int layerInputNum, int layerHiddenNum){
         this.layernum = layernum;
         this.mobp = mobp;
         this.rate = rate;
@@ -39,6 +41,7 @@ public class BPDeep{
         layerErr = new double[layernum.length][];
         layer_weight = new double[layernum.length][][];
         layer_weight_delta = new double[layernum.length][][];
+        float[] gene = chromosome.getGene();
         for(int l=0;l<layernum.length;l++){
             layer[l]=new double[layernum[l]];
             layerErr[l]=new double[layernum[l]];

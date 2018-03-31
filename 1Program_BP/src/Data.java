@@ -13,8 +13,11 @@ public class Data {
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_100000_20000_3_1_1_uniform_phonetic_0.csv";
     // public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_80000_16000_3_1_1_uniform_phonetic_0.csv";
 //    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_50000_10000_3_1_1_uniform_all_0.csv";
-    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
-
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_20000_4000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_10000_2000_3_1_1_uniform_phonetic_0.csv";
+    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_5000_1000_3_1_1_uniform_phonetic_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500_100_5_2_2_uniform_all_0.csv";
+//    public static final String DATA_SET = "D:\\毕业设计\\1数据集\\dataset_500_500_1_1_1_uniform_all_0.csv";
 
 
 
@@ -57,6 +60,24 @@ public class Data {
     }
 
 
+
+    //获取数据集中的真实的重复记录的数据，根据数据集的名字
+    public int getActualDupNumber() {
+        String datasetName = DATA_SET;
+        String[] array = datasetName.split("_");
+        String stringValue = array[2];
+        int result = Integer.valueOf(stringValue);
+        return result;
+    }
+
+    //获取数据集大小
+    public int getDataCount() {
+        String datasetName = DATA_SET;
+        String[] array = datasetName.split("_");
+        String stringValue = array[1];
+        int result = Integer.valueOf(stringValue);
+        return result;
+    }
 
 
     private void getData() throws IOException {
