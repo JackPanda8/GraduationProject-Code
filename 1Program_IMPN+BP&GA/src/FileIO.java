@@ -22,7 +22,7 @@ public class FileIO {
      *  4：一行一行的输出。readline()。 备注：需要考虑的是异常情况
      * @param filePath
      */
-    public static Chromosome readTxtFile(String filePath, String filename) {
+    public static float[] readTxtFile(String filePath, String filename) {
         try {
             String encoding = "GBK";
             File file = new File(filePath+filename);
@@ -33,12 +33,11 @@ public class FileIO {
                 while ((lineTxt = bufferedReader.readLine()) != null) {
 //                    System.out.println(lineTxt);
                     String[] array = lineTxt.split(",");
-                    float[] gene = new float[array.length];
+                    float[] weightAndThreshold = new float[array.length];
                     for(int i = 0; i < array.length; i++) {
-                        gene[i] = Float.parseFloat(array[i]);
+                        weightAndThreshold[i] = Float.parseFloat(array[i]);
                     }
-                    Chromosome chromosome = new Chromosome(gene);
-                    return chromosome;
+                    return weightAndThreshold;
                 }
                 read.close();
 
@@ -51,7 +50,7 @@ public class FileIO {
         return null;
     }
 
-    public static void writeTxtFile(String filepath, String filename, Chromosome best){
+    public static void writeTxtFile(String filepath, String filename, float[] weightAndThreshold){
         File file=new File(filepath+filename);
         BufferedWriter writer = null;
         try {
@@ -62,12 +61,11 @@ public class FileIO {
             else{
                 //writer = new BufferedWriter(new FileWriter(file,true)); //这里加入true 可以不覆盖原有TXT文件内容 续写
                 writer = new BufferedWriter(new FileWriter(file));
-                float[] gene = best.getGene();
-                for(int i = 0; i < gene.length; i++) {
-                    if(i == gene.length -1) {
-                        writer.write(String.valueOf(gene[i]));
+                for(int i = 0; i < weightAndThreshold.length; i++) {
+                    if(i == weightAndThreshold.length -1) {
+                        writer.write(String.valueOf(weightAndThreshold[i]));
                     } else {
-                        writer.write(String.valueOf(gene[i]) + ",");
+                        writer.write(String.valueOf(weightAndThreshold[i]) + ",");
                     }
                 }
             }

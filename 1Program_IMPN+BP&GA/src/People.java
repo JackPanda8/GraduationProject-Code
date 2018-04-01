@@ -3,7 +3,7 @@ import java.util.*;
 /*rec_id, culture, sex, age,
   date_of_birth, title, given_name, surname, state,
   suburb, postcode, street_number, address_1, address_2,
-  phone_number, soc_sec_id, blocking_number, family_role*/
+  phone_number, soc_sec_id, blocking_number, family_role 共18个属性*/
 
 public class People {
 
@@ -26,7 +26,7 @@ public class People {
     private String soc_sec_id;
     private String blocking_number;
     private String family_role;
-    private String sortKey;//排序用的key
+    private String sortKey;//排序用的key,后面额外生成的
 
 
     public String getSortKey() {
@@ -189,6 +189,7 @@ public class People {
         this.family_role = family_role;
     }
 
+
     //根据序号返回属性值
     public String getAttributeByIndex(int index) {
         String result = new String();
@@ -288,3 +289,4 @@ public class People {
     }
 
 }
+
