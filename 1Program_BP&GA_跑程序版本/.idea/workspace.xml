@@ -222,7 +222,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../1Program_BP&amp;GA_IMPN预处理" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.0" />
@@ -662,12 +662,12 @@
       <workItem from="1522397053955" duration="6959000" />
       <workItem from="1522487090265" duration="7198000" />
       <workItem from="1522506422547" duration="26000" />
-      <workItem from="1522552378289" duration="782000" />
+      <workItem from="1522552378289" duration="792000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="235313000" />
+    <option name="totallyTimeSpent" value="235323000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">

@@ -2,15 +2,16 @@ import java.util.*;
 
 public class Main extends GeneticAlgorithm{
     private static final String FILEPATH = "D:\\毕业设计\\1程序\\TrainedBPNetwork\\";
+//    private static final String FILEPATH = "D:\\毕业设计\\1程序\\TrainedBPNetwork\\test\\";
 
-    private static final float PORTION = 0.1f;//神经网络的训练数据集占总数据集的比例
-    private static final int TRAINING_NUMBER = 500;//神经网络的训练次数
+    private static final float PORTION = 0.3f;//神经网络的训练数据集占总数据集的比例
+    private static final int TRAINING_NUMBER = 100;//神经网络的训练次数
     private static final double LEARNING_RATE = 0.15;//学习系数
-    private static final double MOBP = 0.9;//动量系数
+    private static final double MOBP = 0.8;//动量系数
     private static final float THRESHOLD = 0.8f;//神经网络的输出层阈值
 
     private static final int POPULATION_SIZE = 3;//种群数量设置
-    private static final int MAX_ITER_NUM = 30;//最大迭代次数
+    private static final int MAX_ITER_NUM = 100;//最大迭代次数
     private static final double MUTATION_RATE = 0.01;//变异概率
     private static final double MUTATION_MAX_SCALE = 0.3;//最大变异率
     private static final double MUTATION_MINSCALE = 0.6;//最小变异率
@@ -22,7 +23,7 @@ public class Main extends GeneticAlgorithm{
     private ArrayList<Chromosome> population;//种群
     public static int geneSize;//染色体中基因的长度
     private ArrayList<HashMap<Double, Double>> expectedAndActual;//种群中染色体对应的期望输出与实际输出，key：期望输出 value：实际输出
-    private ArrayList<ArrayList<Integer>> duplicateList;
+    private HashMap<Integer, ArrayList<Integer>> duplicateList;//邻接链表替代邻接矩阵
 
     public Main() {
         super(geneSize, POPULATION_SIZE, MAX_ITER_NUM, MUTATION_RATE, MUTATION_MAX_SCALE, MUTATION_MINSCALE, CROSSOVER_RATE, CROSSOVER_MAX_SCALE, CROSSOVER_MIN_SCALE);
@@ -159,6 +160,7 @@ public class Main extends GeneticAlgorithm{
         float bestThreshold = bestGene[bestGene.length-1];
         BPDeep bestBP = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP, bestChromosome, inputLayerNumber, hiddenLayerNumber);
 
+
         //【3】再次对BP神经网络进行迭代训练
         for(int i = 0; i < POPULATION_SIZE; i++) {
             for (int n = 0; n < TRAINING_NUMBER; n++) {
@@ -184,6 +186,8 @@ public class Main extends GeneticAlgorithm{
 
         //【3.2】读BP从txt
         Chromosome bestChroFromTXT = FileIO.readTxtFile(FILEPATH, filename.toString());
+//        Chromosome bestChroFromTXT = FileIO.readTxtFile(FILEPATH, "dataCount500portion0.3trainingNumber100learningRate0.15populationSize3maxIterNum100.txt");
+
         BPDeep bestBPFromTXT = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP, bestChroFromTXT, inputLayerNumber, hiddenLayerNumber);
         float bestThresholdFromTXT = bestChroFromTXT.getGene()[bestChroFromTXT.getGene().length-1];
 
@@ -191,10 +195,10 @@ public class Main extends GeneticAlgorithm{
         //【4】使用完整数据集进行检测
         ArrayList<People> testData = data.getDataset();
         int testDataSize = testData.size();
-        main.duplicateList = new ArrayList<ArrayList<Integer>>(testData.size());
+        main.duplicateList = new HashMap<Integer, ArrayList<Integer>>(testData.size());
         for(int i = 0; i < testData.size(); i++) {
             ArrayList<Integer> temp = new ArrayList<Integer>();
-            main.duplicateList.add(temp);
+            main.duplicateList.put(i, temp);
         }
 
         for (int i = 0; i < testDataSize; i++) {
@@ -227,8 +231,10 @@ public class Main extends GeneticAlgorithm{
                     double[][] tempIn = {{simi0, simi1, simi2, simi3, simi4, simi5, simi6, simi7, simi8, simi9, simi10, simi11, simi12, simi13, simi14, simi15, simi16}};
 //                    double[] tempResult = bestBP.computeOut(tempIn[0]);
                     double[] tempResult = bestBPFromTXT.computeOut(tempIn[0]);
-                    boolean isEqual = (tempResult[0] >= bestThreshold) ? (true) : (false);
+                    boolean isEqual = (tempResult[0] >= bestThresholdFromTXT) ? (true) : (false);
                     if(isEqual) {
+                        System.out.println("重复："+p1.getAttributeByIndex(0)+" || "+p2.getAttributeByIndex(0));
+
                         if(!main.duplicateList.get(i).contains(j)) {
                             main.duplicateList.get(i).add(j);
                         }
@@ -268,7 +274,7 @@ public class Main extends GeneticAlgorithm{
                         String s2 = testData.get(e).getRec_id();
                         String[] array1 = s1.split("-");
                         String[] array2 = s2.split("-");
-                        if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1]))) {
+                        if(!(array1[2].equals("org") && array2[2].equals("org")) && (array1[1].equals(array2[1])) ) {
                             trueDup++;
                         }
                     }
@@ -285,7 +291,7 @@ public class Main extends GeneticAlgorithm{
         double chazhunlv = ((double)trueDup)/((double)totalDup) * 100.0;
         double wushibielv = ((double)falseDup)/((double)totalDup) * 100.0;
 
-        System.out.println("改进算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
+        System.out.println("BP+GA算法的查全率为："+chaquanlv+"，查准率为："+chazhunlv+"，误识别率为："+wushibielv);
 
     }
 
