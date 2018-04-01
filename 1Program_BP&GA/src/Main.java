@@ -81,7 +81,7 @@ public class Main extends GeneticAlgorithm{
             BPDeep bp = new BPDeep(new int[]{inputLayerNumber, hiddenLayerNumber, 1}, LEARNING_RATE, MOBP);
             for (int n = 0; n < TRAINING_NUMBER; n++) {
                 for (int j = 0; j < inputSize; j++) {
-//                    bp.train(inputdata[j], target[j]);
+                    bp.train(inputdata[j], target[j]);
                 }
             }
 
@@ -165,7 +165,7 @@ public class Main extends GeneticAlgorithm{
         for(int i = 0; i < POPULATION_SIZE; i++) {
             for (int n = 0; n < TRAINING_NUMBER; n++) {
                 for (int j = 0; j < inputSize; j++) {
-//                    bestBP.train(inputdata[j], target[j]);
+                    bestBP.train(inputdata[j], target[j]);
                 }
             }
         }
@@ -181,7 +181,7 @@ public class Main extends GeneticAlgorithm{
         StringBuilder filename = new StringBuilder();
         filename.append("dataCount"+dataCount).append("portion"+portion).append("trainingNumber"+trainingNumber).append("learningRate"+learningRate).append("populationSize"+populationSize).append("maxIterNum"+maxIterNum);
         filename.append(".txt");
-//        FileIO.writeTxtFile(FILEPATH, filename.toString(), bestChromosome);
+        FileIO.writeTxtFile(FILEPATH, filename.toString(), bestChromosome);
 
 
         //【3.2】读BP从txt
